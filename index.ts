@@ -95,12 +95,23 @@ export const processRecordingTranscript = async (recordingId: string) => {
       return;
     }
 
-    console.log(`Finished Recording transcript, sending update to the server`);
+    console.log(
+      "Finished Recording transcript, uploading tmp json to s3 bucket",
+    );
+
+    const transcript = {
+      language,
+      segments,
+    };
+
+    const { key } = await AWSService.uploadJsonToS3(
+      transcript,
+      `${recordingId}_transcript`,
+      "tmp",
+    );
+    console.log("Sending update to the main server");
     await mainServerRequest.post(`/recording/transcript/${recordingId}`, {
-      transcript: {
-        language,
-        segments,
-      },
+      transcriptKey: key,
     });
   } catch (error) {
     throw new Error(`Error Processing recording Transcript ${error}`);

@@ -1,4 +1,8 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import {
   DeleteMessageCommand,
   ReceiveMessageCommand,
@@ -7,7 +11,7 @@ import {
 import dotenv from "dotenv";
 import { promisify } from "util";
 import os from "os";
-import { pipeline } from "stream";
+import { pipeline, Readable } from "stream";
 import path from "path";
 import { createWriteStream } from "fs";
 
@@ -78,5 +82,34 @@ export class AWSService {
     await streamPipeline(Body as NodeJS.ReadableStream, fileStream);
 
     return tempFilePath;
+  }
+
+  static async uploadJsonToS3(
+    data: object,
+    fileName: string,
+    folderName: string,
+  ): Promise<{ key: string }> {
+    if (!process.env.AWS_BUCKET_NAME) {
+      throw new Error("AWS_BUCKET_NAME is not set in environment variables.");
+    }
+
+    const jsonData = JSON.stringify(data, null, 2);
+
+    const key = `${folderName}/${Date.now()}_${fileName}.json`;
+
+    try {
+      await S3.send(
+        new PutObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+          Body: Buffer.from(jsonData),
+          ContentType: "application/json",
+        }),
+      );
+
+      return { key };
+    } catch (err: any) {
+      throw new Error(`Failed to upload file to S3: ${err?.message || err}`);
+    }
   }
 }
