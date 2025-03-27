@@ -41,6 +41,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
 
     let language = "en";
     let segments = [];
+    let previousEnd: number = 0;
 
     for (const [index, batch] of batches.entries()) {
       let batchFilePath: string | undefined;
@@ -64,7 +65,6 @@ export const processRecordingTranscript = async (recordingId: string) => {
         const whisperS2tTranscript =
           await AiService.transcribeAudio(batchFilePath);
 
-        const previousEnd = index > 0 ? batches[index - 1]?.end : 0;
         const mappedWithIncrementedTimestamp = whisperS2tTranscript.map(
           (t) => ({
             ...t,
@@ -72,8 +72,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
             end: t.end + previousEnd,
           }),
         );
-        
+
         segments.push(...mappedWithIncrementedTimestamp);
+        previousEnd += batch?.end;
       } catch (error: any) {
         throw new Error(
           `Error processing recording batch ${index + 1}: ${error?.message || error}`,
