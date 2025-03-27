@@ -30,20 +30,31 @@ export const processRecordingTranscript = async (recordingId: string) => {
     console.log(`Started Processing recording ${recordingId}`);
 
     const batches = recording?.batches as BatchRecordingDTO[];
+
+    const unprocessedBatches = batches.filter((batch) => !batch.isTranscripted);
+    if (unprocessedBatches.length === 0) {
+      console.log(
+        `All batches for recording ${recordingId} are already transcribed. skipping recording ${recordingId}...`,
+      );
+      return;
+    }
+
     let language = "en";
     let segments = [];
 
     for (const [index, batch] of batches.entries()) {
-      let batchFilePath;
+      let batchFilePath: string | undefined;
       try {
         console.log(
           `Started trancripting batch ${index + 1}/${batches?.length}`,
         );
 
-        if (batch?.isTranscripted) continue;
+        if (batch?.isTranscripted) {
+          console.log(`Skipping batch ${index + 1}, already transcripted...`);
+          continue;
+        }
 
         console.log(`Downloading batch file from s3`);
-
         batchFilePath = await AWSService.downloadS3File(batch.fileKey);
 
         console.log(
@@ -53,15 +64,37 @@ export const processRecordingTranscript = async (recordingId: string) => {
         const whisperS2tTranscript =
           await AiService.transcribeAudio(batchFilePath);
 
-        segments.push(...whisperS2tTranscript);
-      } catch (error) {
-        throw new Error(`Error Processing recording batch ${index} ${error}`);
+        const previousEnd = index > 0 ? batches[index - 1]?.end : 0;
+        const mappedWithIncrementedTimestamp = whisperS2tTranscript.map(
+          (t) => ({
+            ...t,
+            start: t.start + previousEnd,
+            end: t.end + previousEnd,
+          }),
+        );
+        
+        segments.push(...mappedWithIncrementedTimestamp);
+      } catch (error: any) {
+        throw new Error(
+          `Error processing recording batch ${index + 1}: ${error?.message || error}`,
+        );
+      } finally {
+        if (batchFilePath) {
+          await fs.unlink(batchFilePath).catch(() => {
+            console.warn(`Failed to delete temp file: ${batchFilePath}`);
+          });
+        }
       }
-      await fs.unlink(batchFilePath);
+    }
+
+    if (segments.length === 0) {
+      console.warn(
+        `No valid segments found for recording ${recordingId}. Skipping update.`,
+      );
+      return;
     }
 
     console.log(`Finished Recording transcript, sending update to the server`);
-
     await mainServerRequest.post(`/recording/transcript/${recordingId}`, {
       transcript: {
         language,

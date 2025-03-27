@@ -39,10 +39,8 @@ const workerManager = async () => {
       console.log(`Processing message: ${message.Body}`);
 
       try {
-        await Promise.all([
-          processRecordingTranscript(message.Body),
-          // processAnotherTask(message.Body)
-        ]);
+        await processRecordingTranscript(message.Body);
+        // then will take the transcript and pass it to isnights AI processing worker use node worker thread --TODO--
       } catch (error: any) {
         console.error(`Error processing message: ${error?.message || error}`);
       }
