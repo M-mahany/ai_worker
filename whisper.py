@@ -36,5 +36,5 @@ for entry in output[0]:
     entry["end_time"] = float(entry["end_time"])
 
 # Print JSON so Node.js can parse it
-whisper_s2t.write_outputs(out, format='json', ip_files=files, save_dir="/tmp") # Save outputs
+whisper_s2t.write_outputs(output, format='json', ip_files=files, save_dir="/tmp") # Save outputs
 
