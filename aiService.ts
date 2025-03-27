@@ -39,7 +39,7 @@ export class AiService {
         // Generate expected JSON filename
         const jsonFilePath = join(
           dirname(audioFile),
-          `0_${basename(audioFile)}.json`,
+          `0_${basename(audioFile).split(".")[0]}.json`,
         );
 
         try {
