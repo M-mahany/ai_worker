@@ -14,7 +14,7 @@ export class AiService {
     audioFile: string,
   ): Promise<{ text: string; start: number; end: number; words: never[] }[]> {
     return new Promise((resolve, reject) => {
-      const command = `source /home/ubuntu/whisper-env/bin/activate && python3 whisper.py ${audioFile}`;
+      const command = `/home/ubuntu/whisper-env/bin/python3 whisper.py ${audioFile}`;
 
       const pythonProcess = spawn(command, { shell: true });
 
