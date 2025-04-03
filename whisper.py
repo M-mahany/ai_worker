@@ -3,7 +3,7 @@ import time
 import json
 import sys
 
-model = whisper_s2t.load_model(model_identifier="large-v3-turbo", backend='Ctranslate2', device='cpu', compute_type='int8')
+model = whisper_s2t.load_model(model_identifier="large-v2", backend='Ctranslate2', device='cpu', compute_type='int8')
 
 if len(sys.argv) < 2:
     print("No audio file provided.")
