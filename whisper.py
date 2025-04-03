@@ -3,7 +3,7 @@ import time
 import json
 import sys
 
-model = whisper_s2t.load_model(model_identifier="tiny", backend='Ctranslate2', device='cpu', compute_type='int8')
+model = whisper_s2t.load_model(model_identifier="large-v3-turbo", backend='Ctranslate2', device='cpu', compute_type='int8')
 
 if len(sys.argv) < 2:
     print("No audio file provided.")
@@ -22,7 +22,7 @@ output = model.transcribe_with_vad(files,
                                 lang_codes=lang_codes,
                                 tasks=tasks,
                                 initial_prompts=initial_prompts,
-                                batch_size=4)
+                                batch_size=8)
 
 end_time = time.time()
 
