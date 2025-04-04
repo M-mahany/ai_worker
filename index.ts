@@ -113,7 +113,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
     await mainServerRequest.post(`/recording/transcript/${recordingId}`, {
       transcriptKey: key,
     });
-  } catch (error) {
-    throw new Error(`Error Processing recording Transcript ${error}`);
+  } catch (error: any) {
+    throw new Error(
+      `Error Processing recording Transcript ${error?.message || error}`,
+    );
   }
 };
