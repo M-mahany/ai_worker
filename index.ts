@@ -36,6 +36,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
       console.log(
         `All batches for recording ${recordingId} are already transcribed. skipping recording ${recordingId}...`,
       );
+      // should update recording status before breaking the function --TODO--
       return;
     }
 
@@ -52,6 +53,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
 
         if (batch?.isTranscripted) {
           console.log(`Skipping batch ${index + 1}, already transcripted...`);
+          previousEnd += batch?.end;
           continue;
         }
 
