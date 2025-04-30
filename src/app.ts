@@ -4,7 +4,7 @@ import { getInstanceId } from "./helpers/getIntsanceId";
 import path from "node:path";
 import { AWSService } from "./services/awsService";
 
-const MAX_ATTEMPTS = 3;
+const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
 
 const MAX_WORKERS = 3;
