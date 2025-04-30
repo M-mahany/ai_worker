@@ -139,7 +139,7 @@ const handleAutoScalHook = async () => {
       }
     }
   } catch (err: any) {
-    console.log(`setInterval Error ${err?.message || err}`);
+    console.log(`setInterval Error:${err?.message || err}`);
   }
 };
 
