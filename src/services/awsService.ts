@@ -11,11 +11,18 @@ import {
 import dotenv from "dotenv";
 import { promisify } from "util";
 import os from "os";
-import { pipeline, Readable } from "stream";
+import { pipeline } from "stream";
 import path from "path";
 import { createWriteStream } from "fs";
+import {
+  AutoScalingClient,
+  CompleteLifecycleActionCommand,
+  RecordLifecycleActionHeartbeatCommand,
+} from "@aws-sdk/client-auto-scaling";
 
 dotenv.config();
+const ASG_NAME = "ai_worker_auto_scaling";
+const ASG_HOOK_NAME = "pause_instance_termination";
 
 const AWSConfig = {
   region: process.env.AWS_REGION as string,
@@ -31,7 +38,10 @@ const SQS = new SQSClient(AWSConfig);
 
 const S3 = new S3Client(AWSConfig);
 
+export const autoScaling = new AutoScalingClient(AWSConfig);
+
 export class AWSService {
+  // SQS
   static async pollQueue() {
     try {
       const command = new ReceiveMessageCommand({
@@ -62,6 +72,7 @@ export class AWSService {
       );
     }
   }
+  // S3 Bucket
   static async downloadS3File(key: string): Promise<string> {
     const streamPipeline = promisify(pipeline);
 
@@ -83,7 +94,6 @@ export class AWSService {
 
     return tempFilePath;
   }
-
   static async uploadJsonToS3(
     data: object,
     fileName: string,
@@ -110,6 +120,36 @@ export class AWSService {
       return { key };
     } catch (err: any) {
       throw new Error(`Failed to upload file to S3: ${err?.message || err}`);
+    }
+  }
+  // AutoScaling
+  static async completeLifecycleAction(instanceId: string) {
+    const params = {
+      AutoScalingGroupName: ASG_NAME,
+      LifecycleHookName: ASG_HOOK_NAME,
+      InstanceId: instanceId,
+      LifecycleActionResult: "CONTINUE",
+    };
+
+    try {
+      const command = new CompleteLifecycleActionCommand(params);
+      const result = await autoScaling.send(command);
+      console.log("Lifecycle action completed:", result);
+    } catch (error) {
+      console.error("Error completing lifecycle action:", error);
+    }
+  }
+  static async sendLifeCycleHeartBeat(InstanceId: string) {
+    try {
+      await autoScaling.send(
+        new RecordLifecycleActionHeartbeatCommand({
+          LifecycleHookName: ASG_HOOK_NAME,
+          AutoScalingGroupName: ASG_NAME,
+          InstanceId,
+        }),
+      );
+    } catch (error: any) {
+      console.log(`Error Sending Heart beat to Auto scaling group`);
     }
   }
 }

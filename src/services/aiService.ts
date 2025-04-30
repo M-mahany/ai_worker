@@ -1,6 +1,9 @@
 import { spawn } from "child_process";
 import { promises as fs } from "fs";
+import ollama from "ollama";
 import { join, dirname, basename } from "path";
+import { llmPrompt } from "../helpers/generateAiPrompt";
+import { InsightResponse } from "../helpers/transformInsightsBody";
 
 export interface whisperS2T {
   text: string;
@@ -67,5 +70,28 @@ export class AiService {
     }));
   }
 
-  // TODO add insights here as well
+  static async analyzeTranscript(
+    transcriptText: string,
+  ): Promise<InsightResponse> {
+    try {
+      const llmResponse = await ollama.generate({
+        model: "mistral",
+        prompt: llmPrompt(transcriptText),
+        stream: false,
+      });
+      const { response } = llmResponse;
+
+      const jsonStart = response.indexOf("{");
+      const jsonEnd = response.lastIndexOf("}") + 1;
+      const jsonString = response.substring(jsonStart, jsonEnd);
+
+      const parsed = JSON.parse(jsonString);
+
+      return parsed;
+    } catch (error: any) {
+      throw new Error(
+        `LLM failed analyzing transcript Error:${error?.message || error}`,
+      );
+    }
+  }
 }

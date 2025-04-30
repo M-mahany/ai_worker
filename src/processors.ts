@@ -1,10 +1,7 @@
-import axios from "axios";
-import dotenv from "dotenv";
-import { AWSService } from "./awsService";
-import { AiService } from "./aiService";
 import { promises as fs } from "fs";
-
-dotenv.config();
+import { mainServerRequest } from "./utils/mainAPI";
+import { AWSService } from "./services/awsService";
+import { AiService } from "./services/aiService";
 
 interface BatchRecordingDTO {
   fileKey: string;
@@ -14,11 +11,6 @@ interface BatchRecordingDTO {
   fileUrlExpiresAt: number;
   isTranscripted?: boolean;
 }
-
-export const mainServerRequest = axios.create({
-  baseURL: `${process.env.MAIN_SERVER_ENDPOINT}/worker`,
-  headers: { "x-api-key": process.env.API_KEY },
-});
 
 export const processRecordingTranscript = async (recordingId: string) => {
   try {
@@ -112,9 +104,11 @@ export const processRecordingTranscript = async (recordingId: string) => {
       "tmp",
     );
     console.log("Sending update to the main server");
-    await mainServerRequest.post(`/recording/transcript/${recordingId}`, {
+    await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
       transcriptKey: key,
     });
+
+    return transcript;
   } catch (error: any) {
     throw new Error(
       `Error Processing recording Transcript ${error?.message || error}`,

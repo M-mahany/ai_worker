@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prettier": "prettier --write *.ts",
-    "start": "node ./build/worker.js",
-    "build":"npx tsc"
+    "prettier": "prettier --write src/**/*.ts",
+    "start": "node ./build/app.js",
+    "build": "npx tsc"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +18,12 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@aws-sdk/client-auto-scaling": "^3.796.0",
     "@aws-sdk/client-s3": "^3.775.0",
     "@aws-sdk/client-sqs": "^3.775.0",
     "axios": "^1.8.4",
     "dotenv": "^16.4.7",
+    "ollama": "^0.5.15",
     "prettier": "^3.5.3"
   }
 }
