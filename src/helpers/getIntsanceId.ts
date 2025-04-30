@@ -27,9 +27,10 @@ export const getInstanceToken = async () => {
   try {
     const response = await axios.put(
       "http://169.254.169.254/latest/api/token",
+      null,
       {
         headers: {
-          "X-aws-ec2-metadata-token-ttl-seconds": 21600,
+          "X-aws-ec2-metadata-token-ttl-seconds": "21600",
         },
       },
     );
