@@ -108,6 +108,7 @@ const workerManager = async () => {
 };
 
 const waitForWorkerToFinish = async () => {
+  console.log("waiting for worker to finish reached maximum");
   await new Promise((resolve) => {
     const interval = setInterval(() => {
       if (WORKER_RUNNING < MAX_WORKERS) {
