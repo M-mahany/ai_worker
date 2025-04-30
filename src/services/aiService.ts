@@ -80,7 +80,7 @@ export class AiService {
         stream: false,
       });
       const { response } = llmResponse;
-
+      console.log("raw llm response", response);
       const jsonStart = response.indexOf("{");
       const jsonEnd = response.lastIndexOf("}") + 1;
       const jsonString = response.substring(jsonStart, jsonEnd);

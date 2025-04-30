@@ -40,7 +40,7 @@ export interface segmentDTO {
     const llmInsightsJson = await AiService.analyzeTranscript(segmentsTxts);
 
     console.log("Sending AI analysis to the main Server...");
-    console.log("llm insights", llmInsightsJson);
+
     await mainServerRequest.post(`/recording/${recordingId}/insights`, {
       insights: transformInsightsBody(llmInsightsJson),
     });
