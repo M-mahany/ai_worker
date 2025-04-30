@@ -132,11 +132,11 @@ const handleAutoScalHook = async () => {
         hookNotifiedStatus = 1;
       }
     } else {
-      if (hookNotifiedStatus !== 2) {
-        await AWSService.sendLifeCycleHeartBeat(instanceId as string);
-        console.log("Sent Heartbeat");
-        hookNotifiedStatus = 2;
-      }
+      // if (hookNotifiedStatus !== 2) {
+      await AWSService.sendLifeCycleHeartBeat(instanceId as string);
+      console.log("Sent Heartbeat");
+      hookNotifiedStatus = 2;
+      // }
     }
   } catch (err: any) {
     console.log(`setInterval Error:${err?.message || err}`);

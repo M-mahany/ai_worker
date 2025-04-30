@@ -135,10 +135,13 @@ export class AWSService {
       const command = new CompleteLifecycleActionCommand(params);
       const result = await autoScaling.send(command);
       console.log("Lifecycle action completed:", result);
-    } catch (error) {
-      console.error("Error completing lifecycle action:", error);
+    } catch (error: any) {
+      throw new Error(
+        `Error completing lifecycle action Error: ${error?.message || error}`,
+      );
     }
   }
+
   static async sendLifeCycleHeartBeat(InstanceId: string) {
     try {
       await autoScaling.send(
@@ -149,7 +152,9 @@ export class AWSService {
         }),
       );
     } catch (error: any) {
-      console.log(`Error Sending Heart beat to Auto scaling group`);
+      throw new Error(
+        `Error Sending Heart beat to Auto scaling group Error:${error?.message || error}`,
+      );
     }
   }
 }
