@@ -41,9 +41,10 @@ export interface segmentDTO {
 
     console.log("Sending AI analysis to the main Server...");
     console.log("llm insights", llmInsightsJson);
-    await mainServerRequest.post(`/recording/${recordingId}/insights`, {
-      insights: transformInsightsBody(llmInsightsJson),
-    });
+    await mainServerRequest.post(
+      `/recording/${recordingId}/insights`,
+      transformInsightsBody(llmInsightsJson),
+    );
 
     parentPort?.postMessage({ success: true, recordingId });
   } catch (error: any) {
