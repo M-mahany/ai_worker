@@ -27,7 +27,7 @@ output = model.transcribe_with_vad(files,
                                 lang_codes=lang_codes,
                                 tasks=tasks,
                                 initial_prompts=initial_prompts,
-                                batch_size=8)
+                                batch_size=4)
 
 end_time = time.time()
 
