@@ -145,7 +145,7 @@ const handleAutoScalHook = async () => {
 };
 
 setInterval(() => {
-  if (hasActiveWorkerStarted) {
+  if (hasActiveWorkerStarted && WORKER_RUNNING > 0) {
     handleAutoScalHook();
   }
 }, 60000);
