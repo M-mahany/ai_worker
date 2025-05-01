@@ -3,7 +3,6 @@ import { Worker } from "node:worker_threads";
 import { getInstanceId } from "./helpers/getIntsanceId";
 import path from "node:path";
 import { AWSService } from "./services/awsService";
-import { checkCudaReady } from "./helpers/checkCuda";
 
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
