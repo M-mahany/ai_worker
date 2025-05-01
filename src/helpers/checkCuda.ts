@@ -2,7 +2,7 @@ import { exec } from "child_process";
 
 export const checkCudaReady = async (): Promise<boolean> => {
   return new Promise((resolve) => {
-    exec("python3 check_cuda.py", (error, stdout, stderr) => {
+    exec("python3 src/scripts/check_cuda.py", (error, stdout, stderr) => {
       if (error) {
         console.error("❌ CUDA check failed:", stderr);
         resolve(false);
