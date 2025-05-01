@@ -3,6 +3,7 @@ import { Worker } from "node:worker_threads";
 import { getInstanceId } from "./helpers/getIntsanceId";
 import path from "node:path";
 import { AWSService } from "./services/awsService";
+import { checkCudaReady } from "./helpers/checkCuda";
 
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
@@ -149,4 +150,13 @@ setInterval(() => {
   }
 }, 60000);
 
-workerManager();
+(async () => {
+  const isReady = await checkCudaReady();
+
+  if (!isReady) {
+    console.error("Exiting due to unavailable CUDA/GPU.");
+    process.exit(1);
+  }
+
+  workerManager();
+})();
