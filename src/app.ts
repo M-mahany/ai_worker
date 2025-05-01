@@ -150,13 +150,4 @@ setInterval(() => {
   }
 }, 60000);
 
-(async () => {
-  const isReady = await checkCudaReady();
-
-  if (!isReady) {
-    console.error("Exiting due to unavailable CUDA/GPU.");
-    process.exit(1);
-  }
-
-  workerManager();
-})();
+workerManager();
