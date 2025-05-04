@@ -40,6 +40,7 @@ export interface segmentDTO {
     );
     const llmInsightsJson = await retryOnceFn(() =>
       AiService.analyzeTranscript(segmentsTxts),
+    4
     );
 
     console.log("Sending AI analysis to the main Server...");
