@@ -2,6 +2,7 @@ import { parentPort, workerData } from "node:worker_threads";
 import { mainServerRequest } from "../utils/mainAPI";
 import { AiService } from "../services/aiService";
 import { transformInsightsBody } from "../helpers/transformInsightsBody";
+import { retryOnceFn } from "../utils/retryOnce";
 
 export interface segmentDTO {
   start: number;
@@ -37,7 +38,9 @@ export interface segmentDTO {
     console.log(
       `Processing Recording ${recordingId} transcript with ollama...`,
     );
-    const llmInsightsJson = await AiService.analyzeTranscript(segmentsTxts);
+    const llmInsightsJson = await retryOnceFn(() =>
+      AiService.analyzeTranscript(segmentsTxts),
+    );
 
     console.log("Sending AI analysis to the main Server...");
 

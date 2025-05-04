@@ -80,10 +80,17 @@ export class AiService {
         stream: false,
       });
       const { response } = llmResponse;
-      console.log("raw llm response", response);
-      const jsonStart = response.indexOf("{");
-      const jsonEnd = response.lastIndexOf("}") + 1;
-      const jsonString = response.substring(jsonStart, jsonEnd);
+
+      const cleanedResponse = response
+        .replace(/^```json\s*/i, "") // remove starting ```json
+        .replace(/```$/, "") // remove ending ```
+        .trim();
+
+      console.log("raw llm response", cleanedResponse);
+
+      const jsonStart = cleanedResponse.indexOf("{");
+      const jsonEnd = cleanedResponse.lastIndexOf("}") + 1;
+      const jsonString = cleanedResponse.substring(jsonStart, jsonEnd);
 
       const parsed = JSON.parse(jsonString);
 

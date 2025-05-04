@@ -93,7 +93,10 @@ const workerManager = async () => {
           console.error("Worker encountered an error:", err);
         });
       } catch (error: any) {
-        console.error(`Error processing message: ${error?.message || error}`);
+        console.error(
+          `Error processing message: ${error?.message || error}`,
+          error,
+        );
       }
       if (message.ReceiptHandle) {
         console.log(`Message is being deleted...`);
