@@ -1,62 +1,68 @@
 export const llmPrompt = (transcript: string) => {
-  return `You are an expert AI analyst assigned to extract actionable business insights from a 24-hour continuous retail store conversation transcript.
-
-Your job is to analyze customer interactions individually and collectively, and deliver key metrics, insights, and recommended operational improvements.
+  return `You are an expert AI analyst. Your task is to extract real, actionable business insights from a **24-hour retail store conversation transcript**. Avoid assumptions or made-up data.
 
 ---
 
-## KPIs to Extract:
+## 🎯 Your Objectives:
+
+Analyze each customer **conversation** (a full interaction, not individual lines) to extract the following key performance indicators (KPIs), metrics, and insights. Focus **only on the actual transcript content**—do **not** fabricate information or add sample data.
+
+---
+
+## 📊 KPIs to Extract:
 
 1. **Sentiment Distribution**
-   - Output % of Positive, Neutral, and Negative conversation segments.
-
+   - Return the % of Positive, Neutral, and Negative conversations.
+   
 2. **Complaint Rate**
-   - (Number of complaints / Total conversations) × 100%.
-   - Output complaint types with their count as objects (e.g., { "phrase": string, "count": number }).
+   - Formula: (Number of complaint-containing conversations ÷ Total conversations) × 100%
+   - Return actual complaint phrases with their counts:
+     \`[{ "phrase": "example complaint", "count": 2 }]\`
 
 3. **Escalation Signals**
-   - % of conversations with escalation phrases.
-   - Output escalation phrases with their count as objects (e.g., { "phrase": string, "count": number }).
+   - % of conversations with escalation triggers (e.g., “speak to a manager”, “this is unacceptable”)
+   - Return actual escalation phrases and counts.
 
 4. **Top Issues / Topics**
-   - Most frequently mentioned keywords or themes.
-   - Output each issue with a count (e.g., { "phrase": string, "count": number }).
+   - Identify frequently mentioned problems or topics.
+   - Return each phrase/topic with a count.
 
 5. **Nugget Ratio**
-   - % of conversations containing valuable insights (complaints, requests, positive feedback).
+   - % of conversations that contain actionable value (e.g., complaints, feedback, product requests)
 
 ---
 
-## Additional Metrics:
+## ➕ Additional Metrics:
 
-- **Overall Sentiment**: Summarize the dominant tone across all conversations (Positive, Neutral, or Negative).
-- **Customer Questions or Concerns**: Total number of questions or concerns raised by customers.
-- **Quantified Issues**: List key customer concerns with text and count values.
-
----
-
-## Summary:
-
-- Output a short paragraph summarizing the overall customer experience based on the extracted data.
+- **Overall Sentiment**: One-word summary (Positive, Neutral, or Negative).
+- **Customer Questions/Concerns**: Count total customer questions or concerns.
+- **Quantified Issues**: Return major concerns with phrasing and counts.
 
 ---
 
-## Recommendations:
+## 📝 Summary:
 
-- Output 3 to 5 prioritized action items, ordered by impact or urgency.
-- Focus recommendations on improvements related to staffing, customer service, product availability, facilities, or operational efficiency.
-
----
-
-## NOTE:
-
-- A "conversation" is defined as a complete customer interaction episode, not individual utterances.
-- Ensure consistent formatting and strict adherence to the requested JSON structure.
-- Only return the requested data, without any examples or hypothetical scenarios.
+Briefly summarize the **overall customer experience** in a paragraph, based only on the transcript.
 
 ---
 
-## Transcript for Analysis:
+## ✅ Recommendations:
+
+Give **3 to 5 prioritized, realistic** recommendations for:
+- Staffing, customer service, product availability, facilities, or operations.
+- Avoid generalities. Base each recommendation strictly on the data.
+
+---
+
+## 🚫 Do NOT:
+
+- Do **not** invent or assume examples.
+- Do **not** include placeholder/sample data.
+- Do **not** change the output format or add extra fields.
+
+---
+
+## 📌 Transcript:
 
 \`\`\`
 ${transcript}
@@ -64,9 +70,9 @@ ${transcript}
 
 ---
 
-## Output Format:
+## 📦 Output Format:
 
-Return a JSON object structured exactly like this:
+Return exactly this JSON structure (do NOT add example values):
 
 \`\`\`json
 {

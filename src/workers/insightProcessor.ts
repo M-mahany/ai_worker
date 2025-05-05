@@ -38,9 +38,9 @@ export interface segmentDTO {
     console.log(
       `Processing Recording ${recordingId} transcript with ollama...`,
     );
-    const llmInsightsJson = await retryOnceFn(() =>
-      AiService.analyzeTranscript(segmentsTxts),
-    4
+    const llmInsightsJson = await retryOnceFn(
+      () => AiService.analyzeTranscript(segmentsTxts),
+      4,
     );
 
     console.log("Sending AI analysis to the main Server...");
