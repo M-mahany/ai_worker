@@ -83,11 +83,9 @@ export class AiService {
 
       console.log("raw llm response before cleaning", response);
 
-      const cleanedResponse = response
-        .replace(/^```json\s*/i, "") // remove starting ```json
-        .replace(/```[\s\S]*$/, "")
-        .trim();
-
+      const jsonMatch = response.match(/```json([\s\S]*?)```/i);
+      const cleanedResponse = jsonMatch ? jsonMatch[1].trim() : response;
+      
       console.log("raw llm response", cleanedResponse);
 
       const jsonStart = cleanedResponse.indexOf("{");
