@@ -75,7 +75,7 @@ export class AiService {
   ): Promise<InsightResponse> {
     try {
       const llmResponse = await ollama.generate({
-        model: "deepseek-r1:7b",
+        model: "mistral",
         prompt: llmPrompt(transcriptText),
         stream: false,
       });
