@@ -1,47 +1,133 @@
 export const llmPrompt = (transcript: string) => {
-  return `You are an expert AI analyst. Analyze this 24-hour retail store transcript to extract REAL insights. 
+  return `You are an expert AI analyst. Analyze this 24-hour retail store transcript to extract REAL insights
+
+---
+
+## 🎯 Your Objectives:
+
+Analyze each customer **conversation** (a full interaction, not individual lines) to extract the following key performance indicators (KPIs), metrics, and insights. Focus **only on the actual transcript content**—do **not** fabricate information or add sample data.
+
+---
+
+## 📊 KPIs to Extract:
+
+1. **Sentiment Distribution**
+   - Return the % of Positive, Neutral, and Negative conversations.
+   
+2. **Complaint Rate**
+   - Formula: (Number of complaint-containing conversations ÷ Total conversations) × 100%
+   - Return actual complaint phrases with their counts:
+     \`[{ "phrase": "example complaint", "count": 2 }]\`
+
+3. **Escalation Signals**
+   - % of conversations with escalation triggers (e.g., “speak to a manager”, “this is unacceptable”)
+   - Return actual escalation phrases and counts.
+
+4. **Top Issues / Topics**
+   - Identify frequently mentioned problems or topics.
+   - Return each phrase/topic with a count.
+
+5. **Nugget Ratio**
+   - % of conversations that contain actionable value (e.g., complaints, feedback, product requests)
+
+---
+
+## ➕ Additional Metrics:
+
+- **Overall Sentiment**: One-word summary (Positive, Neutral, or Negative).
+- **Customer Questions/Concerns**: Count total customer questions or concerns.
+- **Quantified Issues**: Return major concerns with phrasing and counts.
+- **Confidence Level**: Score from 0-1 rating your confidence in analysis accuracy based on:
+  - Clarity of conversation content
+  - Specificity of measurable indicators
+  - Presence of unambiguous sentiment signals
+
+---
+
+## 📝 Summary:
+
+Briefly summarize the **overall customer experience** in a paragraph, based only on the transcript.
+
+---
+
+## ✅ Recommendations:
+
+Give **3 to 5 prioritized, realistic** recommendations for:
+- Staffing, customer service, product availability, facilities, or operations.
+- Avoid generalities. Base each recommendation strictly on the data.
+
+---
+
+## 🚫 Do NOT:
+- Do **not** invent confidence scores - base strictly on:
+  1) % of conversations with clear sentiment signals
+  2) Explicit complaint/escalation phrasing
+  3) Numeric data availability
+- Do **not** include confidence if transcript is too vague/ambiguous
+- Do **not** use confidence as average - weight by data quality
+- Do **not** invent or assume examples.
+- Do **not** include placeholder/sample data.
+- Do **not** change the output format or add extra fields.
+
+---
+
+## 📌 Transcript:
+
+\`\`\`
+${transcript}
+\`\`\`
+
+---
 
 ## Rules:
 1. Use ONLY data present in the transcript
 2. Never invent examples or metrics
 3. Follow this JSON format EXACTLY:
 
+\`\`\`json
 {
-  "confidence": 0.92,
+  "confidence": number,
   "sentiment_distribution": {
-    "positive": 35,
-    "neutral": 50, 
-    "negative": 15
+    "positive": number,
+    "neutral": number,
+    "negative": number
   },
-  "complaint_rate": 18.7,
+  "complaint_rate": number,
   "complaints": [
-    {"phrase": "long checkout lines", "count": 12},
-    {"phrase": "missing products", "count": 7}
+    {
+      "phrase": "string",
+      "count": number
+    }
   ],
-  "escalation_signals_rate": 8.2,
+  "escalation_signals_rate": number,
   "escalation_phrases": [
-    {"phrase": "speak to manager", "count": 5}
+    {
+      "phrase": "string",
+      "count": number
+    }
   ],
   "top_issues": [
-    {"phrase": "out of stock items", "count": 15}
+    {
+      "phrase": "string",
+      "count": number
+    }
   ],
-  "nugget_ratio": 62.4,
-  "overall_sentiment": "Neutral",
-  "customer_questions_or_concerns": 42,
+  "nugget_ratio": number,
+  "overall_sentiment": "string",
+  "customer_questions_or_concerns": number,
   "quantified_issues": [
-    {"phrase": "broken freezer", "count": 3}
+    {
+      "phrase": "string",
+      "count": number
+    }
   ],
-  "summary": "Customers expressed frustration with inventory...",
+  "summary": "string",
   "recommendations": [
-    "Increase stock checks for top-selling items",
-    "Add express checkout lanes during peak hours"
+    "string",
+    "string",
+    "string"
   ]
 }
-
-## Transcript Analysis:
 \`\`\`
-${transcript}
-\`\`\`
-
-Generate JSON analysis using the above format. Replace all example values with ACTUAL data from the transcript.`;
+`;
 };
