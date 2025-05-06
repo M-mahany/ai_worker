@@ -76,6 +76,9 @@ export class AiService {
     try {
       const llmResponse = await ollama.generate({
         model: "mistral",
+        options:{
+          temperature:0.3
+        },
         prompt: llmPrompt(transcriptText),
         stream: false,
       });
