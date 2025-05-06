@@ -81,6 +81,8 @@ export class AiService {
       });
       const { response } = llmResponse;
 
+      console.log("raw llm response before cleaning", response);
+
       const cleanedResponse = response
         .replace(/^```json\s*/i, "") // remove starting ```json
         .replace(/```[\s\S]*$/, "")
