@@ -75,7 +75,7 @@ export class AiService {
   ): Promise<InsightResponse> {
     try {
       const llmResponse = await ollama.generate({
-        model: "mistral",
+        model: "deepseek-r1:7b",
         prompt: llmPrompt(transcriptText),
         stream: false,
       });
@@ -83,13 +83,18 @@ export class AiService {
 
       const cleanedResponse = response
         .replace(/^```json\s*/i, "") // remove starting ```json
-        .replace(/```$/, "") // remove ending ```
+        .replace(/```[\s\S]*$/, "")
         .trim();
 
       console.log("raw llm response", cleanedResponse);
 
       const jsonStart = cleanedResponse.indexOf("{");
       const jsonEnd = cleanedResponse.lastIndexOf("}") + 1;
+
+      if (jsonStart === -1 || jsonEnd === -1) {
+        throw new Error("Could not locate JSON boundaries in response.");
+      }
+
       const jsonString = cleanedResponse.substring(jsonStart, jsonEnd);
 
       const parsed = JSON.parse(jsonString);
