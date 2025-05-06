@@ -37,6 +37,10 @@ Analyze each customer **conversation** (a full interaction, not individual lines
 - **Overall Sentiment**: One-word summary (Positive, Neutral, or Negative).
 - **Customer Questions/Concerns**: Count total customer questions or concerns.
 - **Quantified Issues**: Return major concerns with phrasing and counts.
+- **Confidence Level**: Score from 0-1 rating your confidence in analysis accuracy based on:
+  - Clarity of conversation content
+  - Specificity of measurable indicators
+  - Presence of unambiguous sentiment signals
 
 ---
 
@@ -55,7 +59,12 @@ Give **3 to 5 prioritized, realistic** recommendations for:
 ---
 
 ## 🚫 Do NOT:
-
+- Do **not** invent confidence scores - base strictly on:
+  1) % of conversations with clear sentiment signals
+  2) Explicit complaint/escalation phrasing
+  3) Numeric data availability
+- Do **not** include confidence if transcript is too vague/ambiguous
+- Do **not** use confidence as average - weight by data quality
 - Do **not** invent or assume examples.
 - Do **not** include placeholder/sample data.
 - Do **not** change the output format or add extra fields.
@@ -76,6 +85,7 @@ Return exactly this JSON structure (do NOT add example values):
 
 \`\`\`json
 {
+  "confidence": number,
   "sentiment_distribution": {
     "positive": number,
     "neutral": number,

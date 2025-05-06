@@ -1,4 +1,5 @@
 export interface InsightResponse {
+  confidence: number;
   sentiment_distribution: {
     positive: number;
     neutral: number;
@@ -31,6 +32,7 @@ export interface InsightResponse {
 
 export const transformInsightsBody = (llmInsights: InsightResponse) => {
   return {
+    confidence: llmInsights.confidence,
     sentimentDistribution: {
       positive: llmInsights?.sentiment_distribution?.positive || 0,
       neutral: llmInsights?.sentiment_distribution?.neutral || 0,
