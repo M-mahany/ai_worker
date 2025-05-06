@@ -81,7 +81,7 @@ ${transcript}
 
 ## 📦 Output Format:
 
-Return exactly this JSON structure (do NOT add example values):
+Return this JSON format EXACTLY:
 
 \`\`\`json
 {

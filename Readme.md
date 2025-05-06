@@ -10,7 +10,6 @@ cd /home/ubuntu/ai_worker
 
 ollama rm mistral
 
-
 echo "🔄 Resetting repo..."
 git reset --hard HEAD
 git clean -fd
@@ -42,7 +41,7 @@ pm2 delete ai_worker 2>/dev/null || true  # <-- Add this line
 pm2 start npm --name "ai_worker" -- start
 pm2 save
 
-source whisper-env/bin/activate
+source /home/ubuntu/whisper-env/bin/activate
 ```
 
 then run this script
