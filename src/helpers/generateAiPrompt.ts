@@ -1,133 +1,134 @@
 export const llmPrompt = (transcript: string) => {
-  return `You are an expert AI analyst. Analyze this 24-hour retail store transcript to extract REAL insights
+  return `You are an expert operational analyst. Your task is to extract **only actionable, strategic insights** from the following transcript, categorized strictly by **the 7 predefined labels below**. You are NOT allowed to create new or modified categories.
 
 ---
 
-## 🎯 Your Objectives:
+## ✅ ALLOWED Categories (use **exact spelling** and casing):
 
-Analyze each customer **conversation** (a full interaction, not individual lines) to extract the following key performance indicators (KPIs), metrics, and insights. Focus **only on the actual transcript content**—do **not** fabricate information or add sample data.
+1. **Customer Satisfaction**: Evidence of positive/negative experiences
+2. **Customer Complaints**: Specific issues raised by customers
+3. **Employee Sentiment**: Staff morale, concerns, suggestions
+4. **Maintenance/Equipment**: Functionality or repair needs
+5. **Product Feedback**: Comments about merchandise/selection
+6. **Operational Red Flags**: Safety, compliance, or service issues
 
----
-
-## 📊 KPIs to Extract:
-
-1. **Sentiment Distribution**
-   - Return the % of Positive, Neutral, and Negative conversations.
-   
-2. **Complaint Rate**
-   - Formula: (Number of complaint-containing conversations ÷ Total conversations) × 100%
-   - Return actual complaint phrases with their counts:
-     \`[{ "phrase": "example complaint", "count": 2 }]\`
-
-3. **Escalation Signals**
-   - % of conversations with escalation triggers (e.g., “speak to a manager”, “this is unacceptable”)
-   - Return actual escalation phrases and counts.
-
-4. **Top Issues / Topics**
-   - Identify frequently mentioned problems or topics.
-   - Return each phrase/topic with a count.
-
-5. **Nugget Ratio**
-   - % of conversations that contain actionable value (e.g., complaints, feedback, product requests)
+⚠️ **Do not** use **any other categories** or generalize insights into business concepts outside of these 7. If the insight cannot be categorized strictly into one of these, **it must be discarded**.
 
 ---
 
-## ➕ Additional Metrics:
+## 🧠 For every accepted insight, return:
 
-- **Overall Sentiment**: One-word summary (Positive, Neutral, or Negative).
-- **Customer Questions/Concerns**: Count total customer questions or concerns.
-- **Quantified Issues**: Return major concerns with phrasing and counts.
-- **Confidence Level**: Score from 0-1 rating your confidence in analysis accuracy based on:
-  - Clarity of conversation content
-  - Specificity of measurable indicators
-  - Presence of unambiguous sentiment signals
-
----
-
-## 📝 Summary:
-
-Briefly summarize the **overall customer experience** in a paragraph, based only on the transcript.
-
----
-
-## ✅ Recommendations:
-
-Give **3 to 5 prioritized, realistic** recommendations for:
-- Staffing, customer service, product availability, facilities, or operations.
-- Avoid generalities. Base each recommendation strictly on the data.
-
----
-
-## 🚫 Do NOT:
-- Do **not** invent confidence scores - base strictly on:
-  1) % of conversations with clear sentiment signals
-  2) Explicit complaint/escalation phrasing
-  3) Numeric data availability
-- Do **not** include confidence if transcript is too vague/ambiguous
-- Do **not** use confidence as average - weight by data quality
-- Do **not** invent or assume examples.
-- Do **not** include placeholder/sample data.
-- Do **not** change the output format or add extra fields.
+- \`category\`: One of the exact categories above  
+- \`evidence\`: Direct quote or paraphrased line from transcript  
+- \`recommendation\`:  
+  - \`root_cause\`: What's causing the issue or opportunity  
+  - \`action_steps\`: Specific actions store management should take  
+  - \`business_impact\`: Expected value of action  
+  - \`success_metrics\`: Measurable outcomes to track success  
+  - \`timeline\`: Feasible timeline to implement
 
 ---
 
 ## 📌 Transcript:
-
 \`\`\`
 ${transcript}
 \`\`\`
 
 ---
 
-## Rules:
-1. Use ONLY data present in the transcript
-2. Never invent examples or metrics
-3. Follow this JSON format EXACTLY:
+## 📤 Output Format (Respond **only** in this strict JSON):
 
 \`\`\`json
-{
-  "confidence": number,
-  "sentiment_distribution": {
-    "positive": number,
-    "neutral": number,
-    "negative": number
-  },
-  "complaint_rate": number,
-  "complaints": [
-    {
-      "phrase": "string",
-      "count": number
-    }
-  ],
-  "escalation_signals_rate": number,
-  "escalation_phrases": [
-    {
-      "phrase": "string",
-      "count": number
-    }
-  ],
-  "top_issues": [
-    {
-      "phrase": "string",
-      "count": number
-    }
-  ],
-  "nugget_ratio": number,
-  "overall_sentiment": "string",
-  "customer_questions_or_concerns": number,
-  "quantified_issues": [
-    {
-      "phrase": "string",
-      "count": number
-    }
-  ],
-  "summary": "string",
-  "recommendations": [
-    "string",
-    "string",
-    "string"
-  ]
-}
+  {
+      "customer_satisfaction": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "customer_complaints": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "employee_sentiment": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "maintenance_or_equipment_issues": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "product_feedback": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "operational_red_flags": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      },
+      "improvement_suggestions": {
+        "evidence": "string",
+        "recommendation": {
+          "root_cause": "string",
+          "action_steps": ["string"],
+          "business_impact": "string",
+          "success_metrics": "string",
+          "timeline": "string"
+        }
+      }
+  }
 \`\`\`
+
+If there are **no matching insights**, return:
+
+\`\`\`json
+{}
+\`\`\`
+
+---
+
+## ❌ Strict Rules:
+
+- DO NOT invent new categories. **Only** use the 7 listed categories.
+- DO NOT summarize or generalize insights into broader topics like "Workforce Management" or "Market Research".
+- DO NOT include any content outside the exact JSON block.
+- DO NOT include generic strategic advice.
+- **Only return insights that fit the exact, predefined categories**.
+- If an insight does not fit the categories, **skip it entirely**.
+- Double-check each insight for compliance **before returning**.
 `;
 };

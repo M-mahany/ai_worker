@@ -37,9 +37,10 @@ npx rimraf ./build
 npm run build
 
 echo "🚀 Starting PM2 app..."
-pm2 delete ai_worker 2>/dev/null || true  # <-- Add this line
+<!-- pm2 delete ai_worker 2>/dev/null || true  # <-- Add this line
 pm2 start npm --name "ai_worker" -- start
-pm2 save
+pm2 save -->
+npm run start
 
 source /home/ubuntu/whisper-env/bin/activate
 ```
@@ -83,5 +84,5 @@ sudo systemctl enable ai_worker.service
 ### check logs
 
 ```
- cat /var/log/ai_worker_output.log
+cat /var/log/ai_worker_output.log
 ```

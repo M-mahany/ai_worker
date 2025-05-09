@@ -75,9 +75,9 @@ export class AiService {
   ): Promise<InsightResponse> {
     try {
       const llmResponse = await ollama.generate({
-        model: "mistral",
-        options:{
-          temperature:0.3
+        model: "phi4",
+        options: {
+          temperature: 0.3,
         },
         prompt: llmPrompt(transcriptText),
         stream: false,
@@ -104,6 +104,7 @@ export class AiService {
 
       return parsed;
     } catch (error: any) {
+      console.log(`LLM failed analyzing transcript Error`, error);
       throw new Error(
         `LLM failed analyzing transcript Error:${error?.message || error}`,
       );
