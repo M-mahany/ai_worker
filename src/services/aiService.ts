@@ -74,8 +74,29 @@ export class AiService {
     transcriptText: string,
   ): Promise<InsightResponse> {
     try {
+      const modelName = "phi4";
+
+      const { models } = await ollama.list();
+      const modelExists = models.some((m) => m.name.includes(modelName));
+      if (!modelExists) {
+        console.log(`Model "${modelName}" not found locally. Pulling...`);
+
+        const pullStream = await ollama.pull({
+          model: modelName,
+          stream: true,
+        });
+
+        for await (const status of pullStream) {
+          if (status.status) {
+            console.log(`[Pulling ${modelName}] ${status.status}`);
+          }
+        }
+
+        console.log(`Model "${modelName}" pulled successfully.`);
+      }
+
       const llmResponse = await ollama.generate({
-        model: "phi4",
+        model: modelName,
         options: {
           temperature: 0.3,
         },
