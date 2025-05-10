@@ -51,7 +51,7 @@ export interface segmentDTO {
 
     parentPort?.postMessage({ success: true, recordingId });
   } catch (error: any) {
-    console.error(
+    console.log(
       `InsightProcessor Worker failed for recording ${recordingId} Error:`,
       error,
     );
