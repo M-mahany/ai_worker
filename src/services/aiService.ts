@@ -12,6 +12,8 @@ export interface whisperS2T {
   end_time: number;
 }
 
+let pullingPromise: Promise<void> | null = null;
+
 export class AiService {
   static async transcribeAudio(
     audioFile: string,
@@ -79,20 +81,23 @@ export class AiService {
       const { models } = await ollama.list();
       const modelExists = models.some((m) => m.name.includes(modelName));
       if (!modelExists) {
-        console.log(`Model "${modelName}" not found locally. Pulling...`);
-
-        const pullStream = await ollama.pull({
-          model: modelName,
-          stream: true,
-        });
-
-        for await (const status of pullStream) {
-          if (status.status) {
-            console.log(`[Pulling ${modelName}] ${status.status}`);
-          }
+        if (pullingPromise) {
+          await pullingPromise;
+        } else {
+          pullingPromise = (async () => {
+            const pullStream = await ollama.pull({
+              model: modelName,
+              stream: true,
+            });
+            for await (const status of pullStream) {
+              if (status.status)
+                console.log(`[Pulling ${modelName}] ${status.status}`);
+            }
+            console.log(`Model "${modelName}" pulled successfully.`);
+          })();
+          await pullingPromise;
+          pullingPromise = null;
         }
-
-        console.log(`Model "${modelName}" pulled successfully.`);
       }
 
       const llmResponse = await ollama.generate({

@@ -7,7 +7,7 @@ import { AWSService } from "./services/awsService";
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
 
-const MAX_WORKERS = 3;
+const MAX_WORKERS = 2;
 let WORKER_RUNNING: number = 0;
 
 let instanceId: string | null = null;
