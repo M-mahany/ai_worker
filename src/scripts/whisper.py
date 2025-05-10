@@ -4,7 +4,7 @@ import json
 import sys
 
 model = whisper_s2t.load_model(
-    model_identifier="large-v2",
+    model_identifier="large-v3",
     backend='CTranslate2',
     device='cuda',
     compute_type='float16'
