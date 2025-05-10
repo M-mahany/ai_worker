@@ -7,7 +7,7 @@ model = whisper_s2t.load_model(
     model_identifier="large-v3",
     backend='CTranslate2',
     device='cuda',
-    compute_type='float16'
+    compute_type='int8_float16'
 )
 
 if len(sys.argv) < 2:
