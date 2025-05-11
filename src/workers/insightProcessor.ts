@@ -31,13 +31,14 @@ export interface segmentDTO {
       transcript = recordingTranscript;
     }
 
-    const segmentsTxts = transcript?.segments;
+    const segmentsArry= transcript?.segments;
+    const segmentsJson = JSON.stringify(segmentsArry, null, 2)
 
     console.log(
       `Processing Recording ${recordingId} transcript with ollama...`,
     );
     const llmInsightsJson = await retryOnceFn(
-      () => AiService.analyzeTranscript(segmentsTxts),
+      () => AiService.analyzeTranscript(segmentsJson),
       4,
     );
 
