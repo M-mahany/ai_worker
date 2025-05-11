@@ -1,6 +1,10 @@
 export interface InsightResponse {
   customer_satisfaction: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -10,7 +14,11 @@ export interface InsightResponse {
     };
   };
   customer_complaints: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -20,7 +28,11 @@ export interface InsightResponse {
     };
   };
   employee_sentiment: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -30,7 +42,11 @@ export interface InsightResponse {
     };
   };
   maintenance_or_equipment_issues: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -40,7 +56,11 @@ export interface InsightResponse {
     };
   };
   product_feedback: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -50,7 +70,11 @@ export interface InsightResponse {
     };
   };
   operational_red_flags: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -60,7 +84,11 @@ export interface InsightResponse {
     };
   };
   improvement_suggestions: {
-    evidence: string;
+    evidence: {
+      start: string;
+      end: string;
+      quote: string;
+    };
     recommendation: {
       root_cause: string;
       action_steps: string[];
@@ -85,7 +113,11 @@ export const transformInsightsBody = (llmInsights: InsightResponse) => {
   const result: Partial<InsightResponse> = {};
   mainKeys.forEach((key) => {
     result[key as keyof InsightResponse] = {
-      evidence: "",
+      evidence: {
+        start: "",
+        end: "",
+        quote: "",
+      },
       recommendation: {
         root_cause: "",
         action_steps: [],
@@ -97,7 +129,11 @@ export const transformInsightsBody = (llmInsights: InsightResponse) => {
   });
   Object.entries(llmInsights).forEach(([key, value]) => {
     result[key as keyof InsightResponse] = {
-      evidence: value?.evidence,
+      evidence: {
+        start: value?.evidence?.start || "",
+        end: value?.evidence?.end || "",
+        quote: value?.evidence?.quote || "",
+      },
       recommendation: {
         root_cause: value?.recommendation?.root_cause || "",
         action_steps: value?.recommendation?.action_steps || [],
