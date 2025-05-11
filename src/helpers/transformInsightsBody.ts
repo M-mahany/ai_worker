@@ -1,8 +1,8 @@
 export interface InsightResponse {
   customer_satisfaction: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -15,8 +15,8 @@ export interface InsightResponse {
   };
   customer_complaints: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -29,8 +29,8 @@ export interface InsightResponse {
   };
   employee_sentiment: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -43,8 +43,8 @@ export interface InsightResponse {
   };
   maintenance_or_equipment_issues: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -57,8 +57,8 @@ export interface InsightResponse {
   };
   product_feedback: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -71,8 +71,8 @@ export interface InsightResponse {
   };
   operational_red_flags: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -85,8 +85,8 @@ export interface InsightResponse {
   };
   improvement_suggestions: {
     evidence: {
-      start: string;
-      end: string;
+      start: number;
+      end: number;
       quote: string;
     };
     recommendation: {
@@ -114,8 +114,8 @@ export const transformInsightsBody = (llmInsights: InsightResponse) => {
   mainKeys.forEach((key) => {
     result[key as keyof InsightResponse] = {
       evidence: {
-        start: "",
-        end: "",
+        start: 0,
+        end: 0,
         quote: "",
       },
       recommendation: {
@@ -130,8 +130,8 @@ export const transformInsightsBody = (llmInsights: InsightResponse) => {
   Object.entries(llmInsights).forEach(([key, value]) => {
     result[key as keyof InsightResponse] = {
       evidence: {
-        start: value?.evidence?.start || "",
-        end: value?.evidence?.end || "",
+        start: value?.evidence?.start || 0,
+        end: value?.evidence?.end || 0,
         quote: value?.evidence?.quote || "",
       },
       recommendation: {

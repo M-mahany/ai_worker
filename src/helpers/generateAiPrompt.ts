@@ -47,10 +47,10 @@ ${transcript}
 \`\`\`json
   {
       "customer_satisfaction": {
-       "evidence": {
-          "start": "hh:mm:ss",  // must match transcript
-          "end": "hh:mm:ss",    // must match transcript
-          "text": "string"
+        "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
           },
         "recommendation": {
           "root_cause": "string",
@@ -61,7 +61,11 @@ ${transcript}
         }
       },
       "customer_complaints": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
@@ -71,7 +75,11 @@ ${transcript}
         }
       },
       "employee_sentiment": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
@@ -81,7 +89,11 @@ ${transcript}
         }
       },
       "maintenance_or_equipment_issues": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
@@ -91,7 +103,11 @@ ${transcript}
         }
       },
       "product_feedback": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
@@ -101,7 +117,11 @@ ${transcript}
         }
       },
       "operational_red_flags": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
@@ -111,7 +131,11 @@ ${transcript}
         }
       },
       "improvement_suggestions": {
-        "evidence": "string",
+          "evidence": {
+            start: number;   // from transcript
+            end: number;     // from transcript
+            quote: string;   // verbatim from transcript
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
