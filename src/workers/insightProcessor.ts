@@ -31,9 +31,7 @@ export interface segmentDTO {
       transcript = recordingTranscript;
     }
 
-    const segmentsTxts = transcript?.segments
-      ?.map((seg: segmentDTO) => seg?.text)
-      .join("\n");
+    const segmentsTxts = transcript?.segments;
 
     console.log(
       `Processing Recording ${recordingId} transcript with ollama...`,

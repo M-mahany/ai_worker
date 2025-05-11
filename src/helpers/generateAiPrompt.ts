@@ -13,16 +13,18 @@ export const llmPrompt = (transcript: string) => {
 6. **Operational Red Flags**: Safety, compliance, or service issues
 
 ⚠️ **Do not** use **any other categories** or generalize insights into business concepts outside of these 7. If the insight cannot be categorized strictly into one of these, **it must be discarded**.
+⚠️ Do not fabricate or estimate timestamps. They must come directly from transcript time blocks.  
+⚠️ If no quote from the transcript is used, do not provide a recommendation.
 
 ---
 
 ## 🧠 For every accepted insight, return:
 
 - \`category\`: One of the exact categories above  
-- \`evidence\`: A **critical** object containing the **exact timestamps** from the transcript and the associated quote. This structure is essential to ensure that the **timing of the evidence** is accurately captured for context.
-  - \`start\`: The **start timestamp** when the phrase begins in the format "hh:mm:ss". This timestamp is critical for identifying when the event or statement occurred.
-  - \`end\`: The **end timestamp** when the phrase ends in the format "hh:mm:ss". This helps mark the duration of the statement or event.
-  - \`quote\`: The **exact quote** or paraphrased phrase directly from the transcript that corresponds to the timestamps. This is the specific line of dialogue or statement from the transcript.  
+- \`evidence\`: An object that includes all of the following:
+  - \`start\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
+  - \`end\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
+  - \`quote\`: A required direct quote taken **verbatim** from the transcript within the specified timestamps
 - \`recommendation\`:  
   - \`root_cause\`: What's causing the issue or opportunity  
   - \`action_steps\`: Specific actions store management should take  
@@ -33,7 +35,8 @@ export const llmPrompt = (transcript: string) => {
 ---
 
 ## 📌 Transcript:
-\`\`\`
+
+\`\`\`json
 ${transcript}
 \`\`\`
 
@@ -44,11 +47,11 @@ ${transcript}
 \`\`\`json
   {
       "customer_satisfaction": {
-        "evidence": {
-          "start": "hh:mm:ss",
-          "end": "hh:mm:ss", 
-          "quote": "string" 
-        },
+       "evidence": {
+          "start": "hh:mm:ss",  // must match transcript
+          "end": "hh:mm:ss",    // must match transcript
+          "quote": "string"
+          },
         "recommendation": {
           "root_cause": "string",
           "action_steps": ["string"],
