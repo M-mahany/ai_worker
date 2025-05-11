@@ -14,7 +14,7 @@ export const llmPrompt = (transcript: string) => {
 
 ⚠️ **Do not** use **any other categories** or generalize insights into business concepts outside of these 7. If the insight cannot be categorized strictly into one of these, **it must be discarded**.
 ⚠️ Do not fabricate or estimate timestamps. They must come directly from transcript time blocks.  
-⚠️ If no quote from the transcript is used, do not provide a recommendation.
+⚠️ If no text from the transcript is used, do not provide a recommendation.
 
 ---
 
@@ -24,7 +24,7 @@ export const llmPrompt = (transcript: string) => {
 - \`evidence\`: An object that includes all of the following:
   - \`start\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
   - \`end\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
-  - \`quote\`: A required direct quote taken **verbatim** from the transcript within the specified timestamps
+  - \`text\`: A required direct text taken **verbatim** from the transcript within the specified timestamps
 - \`recommendation\`:  
   - \`root_cause\`: What's causing the issue or opportunity  
   - \`action_steps\`: Specific actions store management should take  
@@ -50,7 +50,7 @@ ${transcript}
        "evidence": {
           "start": "hh:mm:ss",  // must match transcript
           "end": "hh:mm:ss",    // must match transcript
-          "quote": "string"
+          "text": "string"
           },
         "recommendation": {
           "root_cause": "string",
