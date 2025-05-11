@@ -13,18 +13,25 @@ export const llmPrompt = (transcript: string) => {
 6. **Operational Red Flags**: Safety, compliance, or service issues
 
 ⚠️ **Do not** use **any other categories** or generalize insights into business concepts outside of these 7. If the insight cannot be categorized strictly into one of these, **it must be discarded**.
-⚠️ Do not fabricate or estimate timestamps. They must come directly from transcript time blocks.  
-⚠️ If no text from the transcript is used, do not provide a recommendation.
+
+---
+
+## 📌 Transcript Format:
+
+The transcript is a JSON array of speech segments. Each segment contains:
+- \`start\` and \`end\` fields in seconds (e.g. 7199.604). Use these **as-is**.
+- \`text\`: The actual spoken quote (verbatim).
+- Ignore segments where \`text\` is empty, just "...", or clearly non-informative.
 
 ---
 
 ## 🧠 For every accepted insight, return:
 
 - \`category\`: One of the exact categories above  
-- \`evidence\`: An object that includes all of the following:
-  - \`start\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
-  - \`end\`: A required timestamp in the format "hh:mm:ss" that **must be pulled directly from the transcript**
-  - \`text\`: A required direct text taken **verbatim** from the transcript within the specified timestamps
+- \`evidence\`:  
+  - \`start\`: Value from \`start\` field (in seconds)  
+  - \`end\`: Value from \`end\` field (in seconds)  
+  - \`quote\`: Verbatim text from \`text\` field  
 - \`recommendation\`:  
   - \`root_cause\`: What's causing the issue or opportunity  
   - \`action_steps\`: Specific actions store management should take  
@@ -156,7 +163,6 @@ If there are **no matching insights**, return:
 ---
 
 ## ❌ Strict Rules:
-
 - DO NOT invent new categories. **Only** use the 7 listed categories.
 - DO NOT summarize or generalize insights into broader topics like "Workforce Management" or "Market Research".
 - DO NOT include any content outside the exact JSON block.
@@ -164,5 +170,6 @@ If there are **no matching insights**, return:
 - **Only return insights that fit the exact, predefined categories**.
 - If an insight does not fit the categories, **skip it entirely**.
 - Double-check each insight for compliance **before returning**.
+- DO NOT Invent quotes or timestamps  
 `;
 };
