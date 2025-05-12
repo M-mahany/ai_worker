@@ -1,13 +1,13 @@
 import { processRecordingTranscript } from "./processors";
-import { Worker } from "node:worker_threads";
+// import { Worker } from "node:worker_threads";
 import { getInstanceId } from "./helpers/getIntsanceId";
-import path from "node:path";
+// import path from "node:path";
 import { AWSService } from "./services/awsService";
 
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
 
-const MAX_WORKERS = 2;
+// const MAX_WORKERS = 2;
 let WORKER_RUNNING: number = 0;
 
 let instanceId: string | null = null;
@@ -53,45 +53,47 @@ const workerManager = async () => {
 
         const isAnalyzeType = processingType === "analyze";
 
-        let generatedTranscript;
+        // let generatedTranscript;
+
         if (!isAnalyzeType) {
-          generatedTranscript = await processRecordingTranscript(message.Body);
+          // generatedTranscript =
+           await processRecordingTranscript(message.Body);
         }
 
-        if (WORKER_RUNNING >= MAX_WORKERS) {
-          console.log(
-            "Maximum workers reached. Waiting for a worker to finish...",
-          );
-          await waitForWorkerToFinish();
-        }
+        // if (WORKER_RUNNING >= MAX_WORKERS) {
+        //   console.log(
+        //     "Maximum workers reached. Waiting for a worker to finish...",
+        //   );
+        //   await waitForWorkerToFinish();
+        // }
 
-        const workerPath = path.resolve(
-          __dirname,
-          "./workers/insightProcessor.js",
-        );
+        // const workerPath = path.resolve(
+        //   __dirname,
+        //   "./workers/insightProcessor.js",
+        // );
 
-        const worker = new Worker(workerPath, {
-          workerData: {
-            transcript: generatedTranscript,
-            recordingId: message?.Body,
-          },
-        });
+        // const worker = new Worker(workerPath, {
+        //   workerData: {
+        //     transcript: generatedTranscript,
+        //     recordingId: message?.Body,
+        //   },
+        // });
 
-        WORKER_RUNNING++;
-        hasActiveWorkerStarted = true;
+        // WORKER_RUNNING++;
+        // hasActiveWorkerStarted = true;
         // Handle worker exit event
-        worker.on("exit", (code) => {
-          WORKER_RUNNING--;
-          console.log(
-            `Worker finished with code ${code}. Active workers: ${WORKER_RUNNING}`,
-          );
-        });
+        // worker.on("exit", (code) => {
+        //   WORKER_RUNNING--;
+        //   console.log(
+        //     `Worker finished with code ${code}. Active workers: ${WORKER_RUNNING}`,
+        //   );
+        // });
 
         // Handle worker error event
-        worker.on("error", (err) => {
-          WORKER_RUNNING--;
-          console.error("Worker encountered an error:", err);
-        });
+        // worker.on("error", (err) => {
+        //   WORKER_RUNNING--;
+        //   console.error("Worker encountered an error:", err);
+        // });
       } catch (error: any) {
         console.error(
           `Error processing message: ${error?.message || error}`,
@@ -110,17 +112,17 @@ const workerManager = async () => {
   }
 };
 
-const waitForWorkerToFinish = async () => {
-  console.log("waiting for worker to finish reached maximum");
-  await new Promise((resolve) => {
-    const interval = setInterval(() => {
-      if (WORKER_RUNNING < MAX_WORKERS) {
-        clearInterval(interval);
-        resolve(null);
-      }
-    }, 1000);
-  });
-};
+// const waitForWorkerToFinish = async () => {
+//   console.log("waiting for worker to finish reached maximum");
+//   await new Promise((resolve) => {
+//     const interval = setInterval(() => {
+//       if (WORKER_RUNNING < MAX_WORKERS) {
+//         clearInterval(interval);
+//         resolve(null);
+//       }
+//     }, 1000);
+//   });
+// };
 
 const handleAutoScalHook = async () => {
   try {
