@@ -112,19 +112,24 @@ export class AiService {
 
       console.log("raw llm response before cleaning", response);
 
-      const jsonMatch = response.match(/```json([\s\S]*?)```/i);
-      const cleanedResponse = jsonMatch ? jsonMatch[1].trim() : response;
+      const matches = [...response.matchAll(/```json([\s\S]*?)```/gi)];
+      const jsonMatch =
+        matches.length > 0 ? matches[matches.length - 1][1].trim() : null;
 
-      console.log("raw llm response", cleanedResponse);
+      if (!jsonMatch) {
+        throw new Error(`Ai Response is not a valid json`);
+      }
 
-      const jsonStart = cleanedResponse.indexOf("{");
-      const jsonEnd = cleanedResponse.lastIndexOf("}") + 1;
+      console.log("raw llm response", jsonMatch);
+
+      const jsonStart = jsonMatch.indexOf("{");
+      const jsonEnd = jsonMatch.lastIndexOf("}") + 1;
 
       if (jsonStart === -1 || jsonEnd === -1) {
         throw new Error("Could not locate JSON boundaries in response.");
       }
 
-      const jsonString = cleanedResponse.substring(jsonStart, jsonEnd);
+      const jsonString = jsonMatch.substring(jsonStart, jsonEnd);
 
       const parsed = JSON.parse(jsonString);
 
