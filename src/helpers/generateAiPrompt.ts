@@ -11,17 +11,18 @@ export const llmPrompt = (transcript: string) => {
 4. **Maintenance/Equipment**: Functionality or repair needs
 5. **Product Feedback**: Comments about merchandise/selection
 6. **Operational Red Flags**: Safety, compliance, or service issues
+7. **Improvement Suggestions**: Ideas from customers or staff
+
+---
 
 ⚠️ **Do not** use **any other categories** or generalize insights into business concepts outside of these 7. If the insight cannot be categorized strictly into one of these, **it must be discarded**.
 
 ---
 
-## 📌 Transcript Format:
 
-The transcript is a JSON array of speech segments. Each segment contains:
-- \`start\` and \`end\` fields in seconds (e.g. 7199.604). Use these **as-is**.
-- \`text\`: The actual spoken quote (verbatim).
-- Ignore segments where \`text\` is empty, just "...", or clearly non-informative.
+## 🧹 Ignore Segments That:
+- Are empty, contain "...", or are non-informative filler speech (e.g., "uh", "you know", "like", excessive pauses)
+- Contain vague or general chatter with no actionable value
 
 ---
 
@@ -41,6 +42,15 @@ The transcript is a JSON array of speech segments. Each segment contains:
 
 ---
 
+## 📌 Transcript Format:
+
+The transcript is a JSON array of segments with:
+- \`start\`: start time in seconds (e.g., 124.5)
+- \`end\`: end time in seconds
+- \`text\`: verbatim spoken content
+
+---
+
 ## 📌 Transcript:
 
 \`\`\`json
@@ -49,109 +59,18 @@ ${transcript}
 
 ---
 
-## 📤 Output Format (Respond **only** in this strict JSON):
+## 📤 Final Output (Respond ONLY with a SINGLE JSON object containing all valid insights grouped by category):
 
 \`\`\`json
-  {
-      "customer_satisfaction": {
-        "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "customer_complaints": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "employee_sentiment": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "maintenance_or_equipment_issues": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "product_feedback": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "operational_red_flags": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      },
-      "improvement_suggestions": {
-          "evidence": {
-            start: number;   // from transcript
-            end: number;     // from transcript
-            quote: string;   // verbatim from transcript
-          },
-        "recommendation": {
-          "root_cause": "string",
-          "action_steps": ["string"],
-          "business_impact": "string",
-          "success_metrics": "string",
-          "timeline": "string"
-        }
-      }
-  }
+{
+  "customer_satisfaction": { /* insight objects */ },
+  "customer_complaints": { /* insight objects */ },
+  "employee_sentiment": { /* insight objects */ },
+  "maintenance_or_equipment": { /* insight objects */ },
+  "product_feedback": { /* insight objects */ },
+  "operational_red_flags": { /* insight objects */ },
+  "improvement_suggestions": { /* insight objects */ }
+}
 \`\`\`
 
 If there are **no matching insights**, return:
@@ -170,6 +89,6 @@ If there are **no matching insights**, return:
 - **Only return insights that fit the exact, predefined categories**.
 - If an insight does not fit the categories, **skip it entirely**.
 - Double-check each insight for compliance **before returning**.
-- DO NOT Invent quotes or timestamps  
+- DO NOT Invent quotes or timestamps.
 `;
 };
