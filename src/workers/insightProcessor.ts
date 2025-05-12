@@ -31,8 +31,8 @@ export interface segmentDTO {
       transcript = recordingTranscript;
     }
 
-    const segmentsArry= transcript?.segments;
-    const segmentsJson = JSON.stringify(segmentsArry, null, 2)
+    const segmentsArry = transcript?.segments;
+    const segmentsJson = JSON.stringify(segmentsArry, null, 2);
 
     console.log(
       `Processing Recording ${recordingId} transcript with ollama...`,
