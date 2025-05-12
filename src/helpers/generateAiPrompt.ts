@@ -59,7 +59,7 @@ ${transcript}
 
 ---
 
-## 📤 Final Output (Respond ONLY with a SINGLE JSON object containing all valid insights grouped by category):
+## 📤 Output Format (Respond **only** in this strict JSON):
 
 \`\`\`json
  {
