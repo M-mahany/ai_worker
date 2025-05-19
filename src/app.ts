@@ -57,7 +57,7 @@ const workerManager = async () => {
 
         if (!isAnalyzeType) {
           // generatedTranscript =
-           await processRecordingTranscript(message.Body);
+          await processRecordingTranscript(message.Body);
         }
 
         // if (WORKER_RUNNING >= MAX_WORKERS) {

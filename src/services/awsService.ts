@@ -38,7 +38,10 @@ const SQS = new SQSClient(AWSConfig);
 
 const S3 = new S3Client(AWSConfig);
 
-export const autoScaling = new AutoScalingClient(AWSConfig);
+export const autoScaling = new AutoScalingClient({
+  ...AWSConfig,
+  region: "us-east-1",
+});
 
 export class AWSService {
   // SQS
