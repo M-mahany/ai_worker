@@ -1,4 +1,4 @@
-import { TranscriptBySpeakerDTO } from "../services/aiService";
+import { TranscriptBySpeakerDTO } from "../processors";
 
 export const llmPrompt = (transcript: string) => {
   return `You are an expert operational analyst. Your task is to extract **only actionable, strategic insights** from the following transcript, categorized strictly by **the 7 predefined labels below**. You are NOT allowed to create new or modified categories.
