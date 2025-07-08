@@ -4,8 +4,8 @@ import ollama from "ollama";
 import { join, dirname, basename } from "path";
 import { llmPrompt, speakerTypePrompt } from "../helpers/generateAiPrompt";
 import { InsightResponse } from "../helpers/transformInsightsBody";
-import { retryOnceFn } from "../utils/retryOnce";
 import dotenv from "dotenv";
+import { TranscriptBySpeakerDTO } from "../processors";
 
 dotenv.config();
 
@@ -18,17 +18,18 @@ export interface whisperS2T {
   speaker: string;
 }
 
-export interface TranscriptBySpeakerDTO {
-  "Speaker 1": string;
-  "Speaker 2": string;
-}
-
 let pullingPromise: Promise<void> | null = null;
 
 export class AiService {
-  static async transcribeAudio(
-    audioFile: string,
-  ): Promise<{ text: string; start: number; end: number; words: never[] }[]> {
+  static async transcribeAudio(audioFile: string): Promise<
+    {
+      text: string;
+      start: number;
+      end: number;
+      speaker: string;
+      words: never[];
+    }[]
+  > {
     return new Promise((resolve, reject) => {
       const command = `/home/ubuntu/whisper-env/bin/python3 src/scripts/whisper.py ${audioFile} ${process.env.HUGGINGFACE_TOKEN}`;
 
@@ -66,28 +67,7 @@ export class AiService {
           await fs.unlink(jsonFilePath);
           const formatedJson = this.transformJson(parsedJson);
 
-          const transcriptBySpeaker = {
-            "Speaker 1": formatedJson
-              .filter((seg) => seg.speaker === "Speaker 1")
-              .map((seg) => seg.text)
-              .join(" "),
-            "Speaker 2": formatedJson
-              .filter((seg) => seg.speaker === "Speaker 2")
-              .map((seg) => seg.text)
-              .join(" "),
-          };
-
-          const mappedSpeaker: Record<string, string> | undefined =
-            await retryOnceFn(() =>
-              this.getSpeakerTypeFromTranscript(transcriptBySpeaker),
-            );
-
-          const constructedSegments = formatedJson.map((seg) => ({
-            ...seg,
-            speaker: mappedSpeaker?.[seg.speaker] ?? seg.speaker,
-          }));
-
-          resolve(constructedSegments);
+          resolve(formatedJson);
         } catch (error: any) {
           reject(
             new Error("Failed transcribing audio: " + error?.message || error),

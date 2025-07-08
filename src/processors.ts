@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import { mainServerRequest } from "./utils/mainAPI";
 import { AWSService } from "./services/awsService";
 import { AiService } from "./services/aiService";
+import { retryOnceFn } from "./utils/retryOnce";
 
 interface BatchRecordingDTO {
   fileKey: string;
@@ -10,6 +11,11 @@ interface BatchRecordingDTO {
   fileURL: string;
   fileUrlExpiresAt: number;
   isTranscripted?: boolean;
+}
+
+export interface TranscriptBySpeakerDTO {
+  "Speaker 1": string;
+  "Speaker 2": string;
 }
 
 export const processRecordingTranscript = async (recordingId: string) => {
@@ -93,9 +99,29 @@ export const processRecordingTranscript = async (recordingId: string) => {
       "Finished Recording transcript, uploading tmp json to s3 bucket",
     );
 
+    const transcriptBySpeaker = {
+      "Speaker 1": segments
+        .filter((seg) => seg.speaker === "Speaker 1")
+        .map((seg) => seg.text)
+        .join(" "),
+      "Speaker 2": segments
+        .filter((seg) => seg.speaker === "Speaker 2")
+        .map((seg) => seg.text)
+        .join(" "),
+    };
+
+    const mappedSpeaker: Record<string, string> | undefined = await retryOnceFn(
+      () => AiService.getSpeakerTypeFromTranscript(transcriptBySpeaker),
+    );
+
+    const constructedSegments = segments.map((seg) => ({
+      ...seg,
+      speaker: mappedSpeaker?.[seg.speaker] ?? seg.speaker,
+    }));
+
     const transcript = {
       language,
-      segments,
+      segments: constructedSegments,
     };
 
     const { key } = await AWSService.uploadJsonToS3(
@@ -103,6 +129,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
       `${recordingId}_transcript`,
       "tmp",
     );
+
     console.log("Sending update to the main server");
     await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
       transcriptKey: key,
