@@ -13,11 +13,6 @@ interface BatchRecordingDTO {
   isTranscripted?: boolean;
 }
 
-export interface TranscriptBySpeakerDTO {
-  "Speaker 1": string;
-  "Speaker 2": string;
-}
-
 export const processRecordingTranscript = async (recordingId: string) => {
   try {
     const { data: response } = await mainServerRequest.get(
@@ -99,29 +94,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
       "Finished Recording transcript, uploading tmp json to s3 bucket",
     );
 
-    const transcriptBySpeaker = {
-      "Speaker 1": segments
-        .filter((seg) => seg.speaker === "Speaker 1")
-        .map((seg) => seg.text)
-        .join(" "),
-      "Speaker 2": segments
-        .filter((seg) => seg.speaker === "Speaker 2")
-        .map((seg) => seg.text)
-        .join(" "),
-    };
-
-    const mappedSpeaker: Record<string, string> | undefined = await retryOnceFn(
-      () => AiService.getSpeakerTypeFromTranscript(transcriptBySpeaker),
-    );
-
-    const constructedSegments = segments.map((seg) => ({
-      ...seg,
-      speaker: mappedSpeaker?.[seg.speaker] ?? seg.speaker,
-    }));
-
     const transcript = {
       language,
-      segments: constructedSegments,
+      segments,
     };
 
     const { key } = await AWSService.uploadJsonToS3(

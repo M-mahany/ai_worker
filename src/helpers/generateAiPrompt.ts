@@ -1,5 +1,3 @@
-import { TranscriptBySpeakerDTO } from "../processors";
-
 export const llmPrompt = (transcript: string) => {
   return `You are an expert operational analyst. Your task is to extract **only actionable, strategic insights** from the following transcript, categorized strictly by **the 7 predefined labels below**. You are NOT allowed to create new or modified categories.
 
@@ -186,18 +184,3 @@ If there are **no matching insights**, return:
 `;
 };
 
-export const speakerTypePrompt = (
-  transcriptBySpeaker: TranscriptBySpeakerDTO,
-) => {
-  return `You are analyzing a customer service call. Assign each speaker as either "Customer" or "Employee".
-
-Speaker 1: ${transcriptBySpeaker["Speaker 1"]}
-Speaker 2: ${transcriptBySpeaker["Speaker 2"]}
-
-Output Format (Respond ONLY in this strict JSON):
-
-\`\`\`json
-{"Speaker 1": "...", "Speaker 2": "..."}
-\`\`\`
-`;
-};
