@@ -2,7 +2,6 @@ import { promises as fs } from "fs";
 import { mainServerRequest } from "./utils/mainAPI";
 import { AWSService } from "./services/awsService";
 import { AiService } from "./services/aiService";
-import { retryOnceFn } from "./utils/retryOnce";
 
 interface BatchRecordingDTO {
   fileKey: string;
