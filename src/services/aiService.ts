@@ -8,13 +8,20 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+export interface WhisperS2TWords {
+  word: string;
+  start_time: number;
+  end_time: number;
+  speaker: string;
+}
+
 export interface whisperS2T {
   text: string;
   avg_logprob: number;
   no_speech_prob: number;
   start_time: number;
   end_time: number;
-  speaker: string;
+  words: WhisperS2TWords[];
 }
 
 let pullingPromise: Promise<void> | null = null;
@@ -25,8 +32,12 @@ export class AiService {
       text: string;
       start: number;
       end: number;
-      speaker: string;
-      words: never[];
+      words: {
+        word: string;
+        start: number;
+        end: number;
+        speaker: string;
+      }[];
     }[]
   > {
     return new Promise((resolve, reject) => {
@@ -81,8 +92,12 @@ export class AiService {
       text: segment.text,
       start: segment.start_time,
       end: segment.end_time,
-      speaker: segment.speaker,
-      words: [],
+      words: segment.words.map((wrd) => ({
+        word: wrd.word,
+        start: wrd.start_time,
+        end: wrd.end_time,
+        speaker: wrd.speaker,
+      })),
     }));
   }
 

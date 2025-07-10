@@ -7,7 +7,6 @@ import os
 import torch
 import torchaudio
 from pyannote.audio import Pipeline
-# from pyannote.audio.pipelines.utils.hook import ProgressHook
 
 # ---- CONFIGURATION ----
 HUGGINGFACE_TOKEN = sys.argv[2]
@@ -30,10 +29,11 @@ def ensure_wav(input_file):
 try:
     print("Loading Whisper S2T model ...")
     model = whisper_s2t.load_model(
-        model_identifier="large-v3",
+        model_identifier="large-v2",
         backend='CTranslate2',
         device='cuda',
-        compute_type='int8'
+        compute_type='int8',
+        asr_options={'word_timestamps': True}
     )
     print("Loading pyannote diarization model ...")
     diarization_pipeline = Pipeline.from_pretrained(
@@ -64,17 +64,12 @@ def get_speaker_display(label):
     return speaker_id_map[label]
 
 def get_speaker_segments(audio_file):
-    """Runs diarization (with progress bar) and returns list of {start, end, speaker}"""
+    """Runs diarization and returns list of {start, end, speaker}"""
     waveform, sample_rate = torchaudio.load(audio_file)
-    # with ProgressHook() as hook:
-    #     diarization = diarization_pipeline(
-    #         {"waveform": waveform, "sample_rate": sample_rate}, hook=hook
-    #     )
-    
-    diarization = diarization_pipeline(
-    {"waveform": waveform, "sample_rate": sample_rate}
-    )
-
+    diarization = diarization_pipeline({
+        "waveform": waveform,
+        "sample_rate": sample_rate
+    })
     segments = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
         segments.append({
@@ -84,16 +79,34 @@ def get_speaker_segments(audio_file):
         })
     return segments
 
-def find_speaker_label(start, end, speaker_segments):
-    """Assigns speaker by max overlap with diarization segments"""
-    max_overlap = 0
-    assigned_speaker = "Unknown"
+def find_speaker_label(start, end, speaker_segments, margin=0.1):
+    """Assigns speaker by checking overlap or proximity (with small margin)"""
+    best_match = None
+    best_score = 0
+
     for seg in speaker_segments:
-        overlap = max(0, min(end, seg["end"]) - max(start, seg["start"]))
-        if overlap > max_overlap:
-            max_overlap = overlap
-            assigned_speaker = seg["speaker"]
-    return assigned_speaker
+        seg_start, seg_end = seg["start"], seg["end"]
+
+        # Prefer full containment
+        if start >= seg_start and end <= seg_end:
+            return seg["speaker"]
+
+        # Allow small margin for short/edge words
+        overlap = max(0, min(end, seg_end + margin) - max(start, seg_start - margin))
+        if overlap > best_score:
+            best_score = overlap
+            best_match = seg["speaker"]
+
+    return best_match if best_match else "Unknown"
+
+
+def assign_speaker_to_words(words, speaker_segments):
+    """Assign speaker label to each word based on max overlap"""
+    for word in words:
+        word_start = float(word.get("start_time", 0))
+        word_end = float(word.get("end_time", 0))
+        word["speaker"] = find_speaker_label(word_start, word_end, speaker_segments)
+    return words
 
 # ---- TRANSCRIBE WITH WHISPER ----
 files = [audio_file]
@@ -107,12 +120,12 @@ output = model.transcribe_with_vad(
     lang_codes=lang_codes,
     tasks=tasks,
     initial_prompts=initial_prompts,
-    batch_size=4
+    batch_size=4,
 )
 end_time = time.time()
 print(f"Transcription time (s): {end_time - start_time:.2f}")
 
-# Make sure timestamps are floats for compatibility
+# ---- FORMAT TIMESTAMPS ----
 for entry in output[0]:
     entry["start_time"] = float(entry["start_time"])
     entry["end_time"] = float(entry["end_time"])
@@ -121,11 +134,27 @@ for entry in output[0]:
 print("Running speaker diarization ...")
 speaker_segments = get_speaker_segments(audio_file)
 
-# ---- MERGE SPEAKER LABELS ----
+# ---- ASSIGN SPEAKERS PER WORD ----
 for entry in output[0]:
-    entry["speaker"] = find_speaker_label(entry["start_time"], entry["end_time"], speaker_segments)
+    # If word_timestamps are present, use them
+    if "word_timestamps" in entry and isinstance(entry["word_timestamps"], list):
+        # Convert to "words" and assign speaker to each word
+        words = []
+        for w in entry["word_timestamps"]:
+            word_obj = {
+                "word": w["word"],
+                "start_time": float(w["start"]),
+                "end_time": float(w["end"]),
+                "speaker": find_speaker_label(float(w["start"]), float(w["end"]), speaker_segments)
+            }
+            words.append(word_obj)
+        entry["words"] = words
+        del entry["word_timestamps"]  # optional: clean up old format
+    else:
+        # Fallback for segment-level speaker assignment
+        entry["speaker"] = find_speaker_label(entry["start_time"], entry["end_time"], speaker_segments)
 
-# ---- OUTPUT JSON (same structure, just with speakers) ----
+# ---- OUTPUT JSON ----
 try:
     whisper_s2t.write_outputs(
         output,
