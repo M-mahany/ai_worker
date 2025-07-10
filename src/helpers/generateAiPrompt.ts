@@ -183,4 +183,3 @@ If there are **no matching insights**, return:
 - DO NOT Invent quotes or timestamps.
 `;
 };
-

@@ -7,7 +7,7 @@ import os
 import torch
 import torchaudio
 from pyannote.audio import Pipeline
-from pyannote.audio.pipelines.utils.hook import ProgressHook
+# from pyannote.audio.pipelines.utils.hook import ProgressHook
 
 # ---- CONFIGURATION ----
 HUGGINGFACE_TOKEN = sys.argv[2]
@@ -66,10 +66,15 @@ def get_speaker_display(label):
 def get_speaker_segments(audio_file):
     """Runs diarization (with progress bar) and returns list of {start, end, speaker}"""
     waveform, sample_rate = torchaudio.load(audio_file)
-    with ProgressHook() as hook:
-        diarization = diarization_pipeline(
-            {"waveform": waveform, "sample_rate": sample_rate}, hook=hook
-        )
+    # with ProgressHook() as hook:
+    #     diarization = diarization_pipeline(
+    #         {"waveform": waveform, "sample_rate": sample_rate}, hook=hook
+    #     )
+    
+    diarization = diarization_pipeline(
+    {"waveform": waveform, "sample_rate": sample_rate}
+    )
+
     segments = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
         segments.append({
