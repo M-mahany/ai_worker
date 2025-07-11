@@ -66,7 +66,7 @@ export class AiService {
         // Generate expected JSON filename
         const jsonFilePath = join(
           dirname(audioFile),
-          `0_${basename(audioFile).split(".")[0]}.json`,
+          `${basename(audioFile).split(".")[0]}_faster_whisper.json`,
         );
 
         try {
