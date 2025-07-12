@@ -31,54 +31,6 @@ interface GroupedSegmentsBySpeakerDTO {
   speaker: string;
 }
 
-function groupSegmentsBySpeaker(
-  parsedJson: TransformedWhisperS2T[],
-): GroupedSegmentsBySpeakerDTO[] {
-  const result: GroupedSegmentsBySpeakerDTO[] = [];
-
-  parsedJson.forEach((segment) => {
-    let currentSpeaker: any = null;
-    let buffer: string[] = [];
-    let start_time: number = 0;
-    let end_time: number = 0;
-
-    segment.words.forEach((word, idx) => {
-      const { speaker, word: text, start, end } = word;
-
-      if (currentSpeaker === null || speaker !== currentSpeaker) {
-        // Push last group
-        if (buffer.length > 0) {
-          result.push({
-            text: buffer.join(" "),
-            start: start_time,
-            end: end_time,
-            speaker: currentSpeaker,
-          });
-          buffer = [];
-        }
-
-        // Start new speaker group
-        currentSpeaker = speaker;
-        start_time = start;
-      }
-
-      buffer.push(text);
-      end_time = end;
-
-      // Final word
-      if (idx === segment.words.length - 1) {
-        result.push({
-          text: buffer.join(" "),
-          start: start_time,
-          end: end_time,
-          speaker: currentSpeaker,
-        });
-      }
-    });
-  });
-  console.log(result);
-  return result;
-}
 
 export const processRecordingTranscript = async (recordingId: string) => {
   try {
@@ -169,11 +121,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
       "Finished Recording transcript, uploading tmp json to s3 bucket",
     );
 
-    const groupedSpeakerSegments = groupSegmentsBySpeaker(segments);
-
     const transcript = {
       language,
-      segments: groupedSpeakerSegments,
+      segments,
     };
 
     const { key } = await AWSService.uploadJsonToS3(
