@@ -43,7 +43,7 @@ export class AiService {
 
       const env = {
         ...process.env,
-        LD_LIBRARY_PATH: '/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu'
+        LD_LIBRARY_PATH: "/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu",
       };
 
       const pythonProcess = spawn(command, { shell: true, env });
@@ -66,7 +66,6 @@ export class AiService {
           );
         }
 
-        console.log("Whisper and pyannote finished successfully!");
         // Generate expected JSON filename
         const jsonFilePath = join(
           dirname(audioFile),
@@ -80,8 +79,6 @@ export class AiService {
           // Delete JSON file after reading
           await fs.unlink(jsonFilePath);
           const formatedJson = this.transformJson(parsedJson);
-
-          console.log("Transcript transformed JSON output:", formatedJson);
 
           resolve(formatedJson);
         } catch (error: any) {
