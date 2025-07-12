@@ -143,6 +143,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
         segments.push(...mappedWithIncrementedTimestamp);
         previousEnd += batch?.end;
       } catch (error: any) {
+        console.log(
+          `Error processing recording batch ${index + 1}: ${error?.message || error}`,
+        );
         throw new Error(
           `Error processing recording batch ${index + 1}: ${error?.message || error}`,
         );
@@ -186,6 +189,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
 
     return transcript;
   } catch (error: any) {
+    console.log(
+      `Error Processing recording Transcript ${error?.message || error}`,
+    );
     throw new Error(
       `Error Processing recording Transcript ${error?.message || error}`,
     );
