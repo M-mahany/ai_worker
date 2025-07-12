@@ -41,7 +41,12 @@ export class AiService {
     return new Promise((resolve, reject) => {
       const command = `/home/ubuntu/whisper-env/bin/python3 src/scripts/whisper.py ${audioFile} ${process.env.HUGGINGFACE_TOKEN}`;
 
-      const pythonProcess = spawn(command, { shell: true });
+      const env = {
+        ...process.env,
+        LD_LIBRARY_PATH: '/usr/local/cuda/lib64:/usr/lib/x86_64-linux-gnu'
+      };
+
+      const pythonProcess = spawn(command, { shell: true, env });
 
       let fullData = "";
       let errorOutput = "";
