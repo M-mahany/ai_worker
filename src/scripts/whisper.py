@@ -91,10 +91,14 @@ start_time = time.time()
 segments, info = model.transcribe(
     audio_file, 
     word_timestamps=True,
-    beam_size=5,
+    vad_filter=False,
     language="en",
     initial_prompt=None,
+    beam_size=5,
+    condition_on_previous_text=True,
+    temperature=0.0
     )
+
 end_time = time.time()
 print(f"Transcription time (s): {end_time - start_time:.2f}")
 

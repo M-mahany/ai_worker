@@ -120,9 +120,7 @@ output = model.transcribe_with_vad(
     lang_codes=lang_codes,
     tasks=tasks,
     initial_prompts=initial_prompts,
-    batch_size=5,
-    condition_on_previous_text=True,
-    temperature=0.0
+    batch_size=4,
 )
 end_time = time.time()
 print(f"Transcription time (s): {end_time - start_time:.2f}")
