@@ -29,7 +29,7 @@ def ensure_wav(input_file):
 # ---- LOAD MODELS ----
 try:
     print("Loading Faster-Whisper model ...")
-    model = WhisperModel("large-v3", device="cuda", compute_type="int8")
+    model = WhisperModel("large-v3", device="cuda", compute_type="float16")
 
     print("Loading pyannote diarization model ...")
     diarization_pipeline = Pipeline.from_pretrained(
@@ -88,7 +88,13 @@ def find_speaker_label(start, end, speaker_segments, margin=0.1):
 
 # ---- TRANSCRIBE WITH FASTER-WHISPER ----
 start_time = time.time()
-segments, info = model.transcribe(audio_file, word_timestamps=True)
+segments, info = model.transcribe(
+    audio_file, 
+    word_timestamps=True,
+    beam_size=5,
+    language="en",
+    initial_prompt=None,
+    )
 end_time = time.time()
 print(f"Transcription time (s): {end_time - start_time:.2f}")
 
@@ -120,3 +126,14 @@ with open(out_path, "w", encoding="utf-8") as f:
     json.dump(final_output, f, indent=2, ensure_ascii=False)
 
 print(f"✅ Output written to {out_path}")
+
+# ---- CLEANUP WAV IF CONVERTED ----
+def cleanup_wav_file(original_file, wav_file):
+    if not original_file.lower().endswith('.wav') and os.path.exists(wav_file):
+        try:
+            os.remove(wav_file)
+            print(f"🧹 Removed temporary WAV file: {wav_file}")
+        except Exception as e:
+            print(f"⚠️ Failed to delete WAV file: {e}")
+
+cleanup_wav_file(sys.argv[1], audio_file)
