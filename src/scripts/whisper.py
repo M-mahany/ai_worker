@@ -29,7 +29,7 @@ def ensure_wav(input_file):
 # ---- LOAD MODELS ----
 try:
     print("Loading Faster-Whisper model ...")
-    model = WhisperModel("large-v3", device="cuda", compute_type="float16")
+    model = WhisperModel("large-v3", device="cuda", compute_type="int8")
 
     print("Loading pyannote diarization model ...")
     diarization_pipeline = Pipeline.from_pretrained(
@@ -95,6 +95,7 @@ segments, info = model.transcribe(
     language="en",
     initial_prompt=None,
     beam_size=5,
+    batch_size=8,
     condition_on_previous_text=True,
     temperature=0.0
     )
