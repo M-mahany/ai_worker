@@ -17,8 +17,6 @@ export interface WhisperS2TWords {
 
 export interface whisperS2T {
   text: string;
-  avg_logprob: number;
-  no_speech_prob: number;
   start_time: number;
   end_time: number;
   words: WhisperS2TWords[];
