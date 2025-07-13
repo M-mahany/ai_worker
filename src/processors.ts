@@ -12,26 +12,6 @@ interface BatchRecordingDTO {
   isTranscripted?: boolean;
 }
 
-interface TransformedWhisperS2T {
-  text: string;
-  start: number;
-  end: number;
-  words: {
-    word: string;
-    start: number;
-    end: number;
-    speaker: string;
-  }[];
-}
-
-interface GroupedSegmentsBySpeakerDTO {
-  text: string;
-  start: number;
-  end: number;
-  speaker: string;
-}
-
-
 export const processRecordingTranscript = async (recordingId: string) => {
   try {
     const { data: response } = await mainServerRequest.get(
