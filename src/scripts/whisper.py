@@ -75,17 +75,11 @@ def get_speaker_segments(audio_file):
     return segments
 
 def find_speaker_label(start, end, speaker_segments, margin=0.1):
-    best_match = None
-    best_score = 0
+    midpoint = (start + end) / 2
     for seg in speaker_segments:
-        seg_start, seg_end = seg["start"], seg["end"]
-        if start >= seg_start and end <= seg_end:
+        if seg["start"] - margin <= midpoint <= seg["end"] + margin:
             return seg["speaker"]
-        overlap = max(0, min(end, seg_end + margin) - max(start, seg_start - margin))
-        if overlap > best_score:
-            best_score = overlap
-            best_match = seg["speaker"]
-    return best_match if best_match else "Unknown"
+    return "Unknown"
 
 # ---- TRANSCRIBE WITH FASTER-WHISPER ----
 start_time = time.time()
@@ -93,11 +87,11 @@ segments, info = batched_model.transcribe(
     audio_file, 
     word_timestamps=True,
     vad_filter=True,
-    vad_parameters=dict(min_silence_duration_ms=500),
+    vad_parameters=dict(min_silence_duration_ms=250),
     language="en",
     initial_prompt=None,
     beam_size=5,
-    batch_size=8,
+    batch_size=16,
     condition_on_previous_text=True,
     temperature=0.0
     )
