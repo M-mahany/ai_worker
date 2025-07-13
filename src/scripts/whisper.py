@@ -7,7 +7,7 @@ import torch
 import torchaudio
 import json
 from pyannote.audio import Pipeline
-from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel, BatchedInferencePipeline
 
 # ---- CONFIGURATION ----
 HUGGINGFACE_TOKEN = sys.argv[2]
@@ -30,6 +30,7 @@ def ensure_wav(input_file):
 try:
     print("Loading Faster-Whisper model ...")
     model = WhisperModel("large-v3", device="cuda", compute_type="int8")
+    batched_model = BatchedInferencePipeline(model=model)
 
     print("Loading pyannote diarization model ...")
     diarization_pipeline = Pipeline.from_pretrained(
@@ -88,7 +89,7 @@ def find_speaker_label(start, end, speaker_segments, margin=0.1):
 
 # ---- TRANSCRIBE WITH FASTER-WHISPER ----
 start_time = time.time()
-segments, info = model.transcribe(
+segments, info = batched_model.transcribe(
     audio_file, 
     word_timestamps=True,
     vad_filter=False,
