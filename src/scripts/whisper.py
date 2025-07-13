@@ -92,7 +92,8 @@ start_time = time.time()
 segments, info = batched_model.transcribe(
     audio_file, 
     word_timestamps=True,
-    vad_filter=False,
+    vad_filter=True,
+    vad_parameters=dict(min_silence_duration_ms=500),
     language="en",
     initial_prompt=None,
     beam_size=5,
