@@ -59,7 +59,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
         const whisperS2tTranscript =
           await AiService.transcribeAudio(batchFilePath);
 
-        console.log('batch transcript', whisperS2tTranscript)
+        console.log("batch transcript", whisperS2tTranscript);
         const mappedWithIncrementedTimestamp = whisperS2tTranscript.map(
           (t) => ({
             ...t,
@@ -94,8 +94,11 @@ export const processRecordingTranscript = async (recordingId: string) => {
     }
 
     if (segments.length === 0) {
-      console.warn(
-        `No valid segments found for recording ${recordingId}. Skipping update.`,
+      await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
+        transcriptKey: null,
+      });
+      console.log(
+        `Recording ${recordingId} is silent. No transcript generated.`,
       );
       return;
     }
