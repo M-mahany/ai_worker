@@ -122,6 +122,7 @@ export class AWSService {
 
       return { key };
     } catch (err: any) {
+      console.log(`Failed to upload file to S3: ${err?.message || err}`);
       throw new Error(`Failed to upload file to S3: ${err?.message || err}`);
     }
   }
