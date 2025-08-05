@@ -43,11 +43,11 @@ export const processRecordingTranscript = async (recordingId: string) => {
           `Started trancripting batch ${index + 1}/${batches?.length}`,
         );
 
-        if (batch?.isTranscripted) {
-          console.log(`Skipping batch ${index + 1}, already transcripted...`);
-          previousEnd += batch?.end;
-          continue;
-        }
+        // if (batch?.isTranscripted) {
+        //   console.log(`Skipping batch ${index + 1}, already transcripted...`);
+        //   previousEnd += batch?.end;
+        //   continue;
+        // }
 
         console.log(`Downloading batch file from s3`);
         batchFilePath = await AWSService.downloadS3File(batch.fileKey);
