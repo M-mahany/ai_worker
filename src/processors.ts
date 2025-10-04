@@ -96,7 +96,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
     console.log("segmentsCount:", segments?.length);
 
     if (segments.length === 0) {
-      console.log("segements:", segments);
+      // console.log("segements:", segments);
       console.log(
         `Recording ${recordingId} is silent. No transcript generated. sending null Key to main server...`,
       );
