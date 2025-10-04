@@ -93,13 +93,16 @@ export const processRecordingTranscript = async (recordingId: string) => {
       }
     }
 
+    console.log("segmentsCount:", segments?.length);
+
     if (segments.length === 0) {
+      console.log("segements:", segments);
+      console.log(
+        `Recording ${recordingId} is silent. No transcript generated. sending null Key to main server...`,
+      );
       await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
         transcriptKey: null,
       });
-      console.log(
-        `Recording ${recordingId} is silent. No transcript generated.`,
-      );
       return;
     }
 
@@ -119,7 +122,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
       `${recordingId}_transcript`,
       "tmp",
     );
-    console.log('transcriptKey', key);
+    console.log("transcriptKey", key);
 
     // console.log("AWS file key (2)", key);
 
