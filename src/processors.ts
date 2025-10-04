@@ -33,7 +33,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
     }
 
     let language = "en";
-    let segments = [];
+    let segments: any[] = [];
     let previousEnd: number = 0;
 
     for (const [index, batch] of batches.entries()) {
