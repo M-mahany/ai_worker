@@ -112,13 +112,14 @@ export const processRecordingTranscript = async (recordingId: string) => {
       segments,
     };
 
-    // console.log("transcript(1)", transcript);
+    console.log("transcriptJson", transcript);
 
     const { key } = await AWSService.uploadJsonToS3(
       transcript,
       `${recordingId}_transcript`,
       "tmp",
     );
+    console.log('transcriptKey', key);
 
     // console.log("AWS file key (2)", key);
 
