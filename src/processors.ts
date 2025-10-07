@@ -24,11 +24,25 @@ export const processRecordingTranscript = async (recordingId: string) => {
     const batches = recording?.batches as BatchRecordingDTO[];
 
     const unprocessedBatches = batches.filter((batch) => !batch.isTranscripted);
+
     if (unprocessedBatches.length === 0) {
       console.log(
         `All batches for recording ${recordingId} are already transcribed. skipping recording ${recordingId}...`,
       );
       // should update recording status before breaking the function --TODO--
+      return;
+    }
+
+    const expectedTranscriptFileKey = `tmp/${recordingId}_transcript.json`;
+
+    const hasTranscriptKey = await AWSService.fileExists(
+      expectedTranscriptFileKey,
+    );
+
+    if (hasTranscriptKey) {
+      await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
+        transcriptKey: expectedTranscriptFileKey,
+      });
       return;
     }
 
@@ -95,13 +109,13 @@ export const processRecordingTranscript = async (recordingId: string) => {
 
     console.log("segmentsCount:", segments?.length);
 
-    if (segments.length === 0) {
-      // console.log("segements:", segments);
+    if (segments?.length === 0) {
       console.log(
         `Recording ${recordingId} is silent. No transcript generated. sending null Key to main server...`,
       );
       await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
         transcriptKey: null,
+        isSilent: true,
       });
       return;
     }

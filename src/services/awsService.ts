@@ -1,5 +1,6 @@
 import {
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -108,7 +109,9 @@ export class AWSService {
 
     const jsonData = JSON.stringify(data, null, 2);
 
-    const key = `${folderName}/${Date.now()}_${fileName}.json`;
+    // const key = `${folderName}/${Date.now()}_${fileName}.json`;
+
+    const key = `${folderName}/${fileName}.json`;
 
     try {
       await S3.send(
@@ -126,6 +129,26 @@ export class AWSService {
       throw new Error(`Failed to upload file to S3: ${err?.message || err}`);
     }
   }
+
+  static async fileExists(key: string) {
+    try {
+      await S3.send(
+        new HeadObjectCommand({
+          Bucket: process.env.AWS_BUCKET_NAME,
+          Key: key,
+        }),
+      );
+      return true; // ✅ File exists
+    } catch (error: any) {
+      // if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
+      //   return false; // ❌ File does not exist
+      // }
+      // Any other unexpected error (e.g. permissions, invalid bucket)
+      // console.error("Error checking file existence:", error);
+      return false;
+    }
+  }
+
   // AutoScaling
   static async completeLifecycleAction(instanceId: string) {
     const params = {
