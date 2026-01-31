@@ -2,8 +2,10 @@ import { promises as fs } from "fs";
 import { mainServerRequest } from "./utils/mainAPI";
 import { AWSService } from "./services/awsService";
 import { AiService } from "./services/aiService";
+import { getFileTimestampFromFileKey } from "./utils/getTimestampFromFilekey";
 
 interface BatchRecordingDTO {
+  _id: string;
   fileKey: string;
   start: number; // Start time in seconds
   end: number; // End time in seconds
@@ -33,24 +35,46 @@ export const processRecordingTranscript = async (recordingId: string) => {
       return;
     }
 
-    const expectedTranscriptFileKey = `tmp/${recordingId}_transcript.json`;
+    let recordingTranscript: any = null;
 
-    const hasTranscriptKey = await AWSService.fileExists(
-      expectedTranscriptFileKey,
-    );
+    try {
+      const { data: transcriptResponse } = await mainServerRequest.get(
+        `/recording/${recordingId}/transcript`,
+      );
+      const { data: recordingTranscriptData } = transcriptResponse;
 
-    if (hasTranscriptKey) {
-      await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
-        transcriptKey: expectedTranscriptFileKey,
-      });
-      return;
+      recordingTranscript = recordingTranscriptData;
+      console.log(`Recording ${recordingId} transcript fetched successfully`);
+    } catch (error: any) {
+      console.log(
+        `Error fetching recording ${recordingId} transcript: ${error?.message || error}, continuing with empty transcript...`,
+      );
     }
+
+    // const expectedTranscriptFileKey = `tmp/${recordingId}_transcript.json`;
+
+    // const hasTranscriptKey = await AWSService.fileExists(
+    //   expectedTranscriptFileKey,
+    // );
+
+    // if (hasTranscriptKey) {
+    //   await mainServerRequest.post(`/recording/${recordingId}/transcript`, {
+    //     transcriptKey: expectedTranscriptFileKey,
+    //   });
+    //   return;
+    // }
+
+    const sortedBatches = batches.sort(
+      (a, b) =>
+        getFileTimestampFromFileKey(a.fileKey) -
+        getFileTimestampFromFileKey(b.fileKey),
+    );
 
     let language = "en";
     let segments: any[] = [];
     let previousEnd: number = 0;
 
-    for (const [index, batch] of batches.entries()) {
+    for (const [index, batch] of sortedBatches?.entries() || []) {
       let batchFilePath: string | undefined;
       try {
         console.log(
@@ -62,6 +86,34 @@ export const processRecordingTranscript = async (recordingId: string) => {
         //   previousEnd += batch?.end;
         //   continue;
         // }
+
+        if (batch?.isTranscripted && recordingTranscript) {
+          const batchTranscript = recordingTranscript?.segments?.filter(
+            (segment: any) =>
+              segment?.batchId?.toString() === batch?._id?.toString(),
+          );
+
+          if (batchTranscript?.length > 0) {
+            console.log(`Skipping batch ${index + 1}, already transcribed...`);
+
+            const mappedWithIncrementedTimestamp = batchTranscript.map(
+              (t: any) => ({
+                ...t,
+                start: t?.batchStart + previousEnd,
+                end: t?.batchEnd + previousEnd,
+                words: t?.words?.map((word: any) => ({
+                  ...word,
+                  start: word?.batchStart + previousEnd,
+                  end: word?.batchEnd + previousEnd,
+                })),
+              }),
+            );
+
+            segments.push(...mappedWithIncrementedTimestamp);
+            previousEnd += batch?.end;
+            continue;
+          }
+        }
 
         console.log(`Downloading batch file from s3`);
         batchFilePath = await AWSService.downloadS3File(batch.fileKey);
@@ -77,12 +129,17 @@ export const processRecordingTranscript = async (recordingId: string) => {
         const mappedWithIncrementedTimestamp = whisperS2tTranscript.map(
           (t) => ({
             ...t,
+            batchId: batch?._id?.toString(),
             start: t.start + previousEnd,
             end: t.end + previousEnd,
+            batchStart: t?.start,
+            batchEnd: t?.end,
             words: t.words.map((word) => ({
               ...word,
               start: word.start + previousEnd,
               end: word.end + previousEnd,
+              batchStart: word?.start,
+              batchEnd: word?.end,
             })),
           }),
         );
