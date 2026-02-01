@@ -53,7 +53,7 @@ export class AWSService {
         MessageAttributeNames: ["All"],
         QueueUrl: queueUrl,
         WaitTimeSeconds: 20,
-        VisibilityTimeout: 3600,
+        VisibilityTimeout: 300,
       });
       const { Messages } = await SQS.send(command);
       return Messages || [];
