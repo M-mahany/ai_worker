@@ -122,8 +122,19 @@ export const processRecordingTranscript = async (recordingId: string) => {
           `Started processing Batch transcript ${index + 1} with whisper...`,
         );
 
-        const whisperS2tTranscript =
+        let whisperS2tTranscript =
           await AiService.transcribeAudio(batchFilePath);
+
+        if (whisperS2tTranscript?.length === 0) {
+          whisperS2tTranscript = [
+            {
+              text: ".",
+              start: batch?.start,
+              end: batch?.end,
+              words: [],
+            },
+          ];
+        }
 
         // console.log("batch transcript", whisperS2tTranscript);
         const mappedWithIncrementedTimestamp = whisperS2tTranscript.map(
