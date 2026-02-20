@@ -15,6 +15,7 @@ import os from "os";
 import { pipeline } from "stream";
 import path from "path";
 import { createWriteStream } from "fs";
+import { promises as fs } from "fs";
 import {
   AutoScalingClient,
   CompleteLifecycleActionCommand,
@@ -146,6 +147,44 @@ export class AWSService {
       // Any other unexpected error (e.g. permissions, invalid bucket)
       // console.error("Error checking file existence:", error);
       return false;
+    }
+  }
+
+  static async downloadJsonFromS3(key: string): Promise<string> {
+    try {
+      if (!process.env.AWS_BUCKET_NAME) {
+        throw new Error("AWS_BUCKET_NAME is not set in environment variables.");
+      }
+
+      const command = new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+      });
+
+      const { Body } = await S3.send(command);
+
+      if (!Body) {
+        throw new Error("Empty response body from S3");
+      }
+
+      const jsonData = JSON.parse(await Body.transformToString());
+
+      // Save to temp file
+      const tempFilePath = path.join(os.tmpdir(), `doa_${path.basename(key)}`);
+      await fs.writeFile(
+        tempFilePath,
+        JSON.stringify(jsonData, null, 2),
+        "utf-8",
+      );
+
+      console.log(`✅ DOA JSON file downloaded from S3: ${key}`);
+
+      return tempFilePath;
+    } catch (error: any) {
+      console.error(
+        `❌ Failed to download DOA JSON file from S3: ${error.message}`,
+      );
+      throw error;
     }
   }
 

@@ -25,7 +25,10 @@ export interface whisperS2T {
 let pullingPromise: Promise<void> | null = null;
 
 export class AiService {
-  static async transcribeAudio(audioFile: string): Promise<
+  static async transcribeAudio(
+    audioFile: string,
+    doaJsonFilePath?: string,
+  ): Promise<
     {
       text: string;
       start: number;
@@ -39,7 +42,18 @@ export class AiService {
     }[]
   > {
     return new Promise((resolve, reject) => {
-      const command = `/home/ubuntu/whisper-env/bin/python3 src/scripts/whisper.py ${audioFile} ${process.env.HUGGINGFACE_TOKEN}`;
+      const commandParts = [
+        `/home/ubuntu/whisper-env/bin/python3`,
+        `src/scripts/whisper.py`,
+        audioFile,
+        process.env.HUGGINGFACE_TOKEN || "",
+      ];
+
+      if (doaJsonFilePath) {
+        commandParts.push(`--doa-json`, doaJsonFilePath);
+      }
+
+      const command = commandParts.join(" ");
 
       const env = {
         ...process.env,

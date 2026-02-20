@@ -6,11 +6,10 @@ import os
 import torch
 import torchaudio
 import json
-from pyannote.audio import Pipeline
+import argparse
 from faster_whisper import WhisperModel, BatchedInferencePipeline
 
 # ---- CONFIGURATION ----
-HUGGINGFACE_TOKEN = sys.argv[2]
 SPEAKER_MODEL = "pyannote/speaker-diarization-3.1"
 
 # ---- HELPER: Ensure input is 16kHz mono WAV ----
@@ -26,18 +25,38 @@ def ensure_wav(input_file):
         ], check=True)
     return wav_file
 
+# ---- PARSE ARGUMENTS ----
+parser = argparse.ArgumentParser(description="Transcribe audio with Whisper and speaker diarization")
+parser.add_argument("audio_file", help="Path to audio file")
+parser.add_argument("huggingface_token", help="HuggingFace token for pyannote")
+parser.add_argument("--doa-json", help="Path to DOA JSON file (skips pyannote)", default=None)
+args = parser.parse_args()
+
+HUGGINGFACE_TOKEN = args.huggingface_token
+doa_json_path = args.doa_json
+if doa_json_path is not None and not os.path.exists(doa_json_path):
+    print(f"⚠️ Warning: DOA JSON file not found: {doa_json_path}. Falling back to pyannote.")
+    use_doa_json = False
+else:
+    use_doa_json = doa_json_path is not None and os.path.exists(doa_json_path)
+
 # ---- LOAD MODELS ----
 try:
     print("Loading Faster-Whisper model ...")
     model = WhisperModel("large-v3", device="cuda", compute_type="int8")
     batched_model = BatchedInferencePipeline(model=model)
 
-    print("Loading pyannote diarization model ...")
-    diarization_pipeline = Pipeline.from_pretrained(
-        SPEAKER_MODEL,
-        use_auth_token=HUGGINGFACE_TOKEN
-    )
-    diarization_pipeline.to(torch.device("cuda"))
+    if not use_doa_json:
+        print("Loading pyannote diarization model ...")
+        from pyannote.audio import Pipeline
+        diarization_pipeline = Pipeline.from_pretrained(
+            SPEAKER_MODEL,
+            use_auth_token=HUGGINGFACE_TOKEN
+        )
+        diarization_pipeline.to(torch.device("cuda"))
+    else:
+        print("Using DOA JSON for speaker diarization (skipping pyannote)")
+        diarization_pipeline = None
 except Exception as e:
     print(f"Model loading failed: {e}")
     sys.exit(2)
@@ -45,11 +64,7 @@ except Exception as e:
 print("CUDA available:", torch.cuda.is_available())
 
 # ---- INPUT HANDLING ----
-if len(sys.argv) < 2:
-    print("No audio file provided.")
-    sys.exit(1)
-
-audio_file = ensure_wav(sys.argv[1])
+audio_file = ensure_wav(args.audio_file)
 print(f"Received file: {audio_file}")
 
 # ---- SPEAKER LABEL MAPPING ----
@@ -59,7 +74,34 @@ def get_speaker_display(label):
         speaker_id_map[label] = f"Speaker {len(speaker_id_map) + 1}"
     return speaker_id_map[label]
 
+def get_speaker_segments_from_doa_json(doa_json_path):
+    """Load speaker segments from DOA JSON file (pyannote-compatible format)"""
+    try:
+        with open(doa_json_path, "r", encoding="utf-8") as f:
+            doa_data = json.load(f)
+        
+        segments = []
+        if "segments" in doa_data:
+            for seg in doa_data["segments"]:
+                segments.append({
+                    "start": float(seg["start"]),
+                    "end": float(seg["end"]),
+                    "speaker": seg["speaker"]
+                })
+        else:
+            print(f"⚠️ Warning: DOA JSON does not contain 'segments' key")
+        
+        print(f"✅ Loaded {len(segments)} speaker segments from DOA JSON")
+        return segments
+    except Exception as e:
+        print(f"❌ Failed to load DOA JSON: {e}")
+        raise
+
 def get_speaker_segments(audio_file):
+    """Get speaker segments using pyannote diarization"""
+    if diarization_pipeline is None:
+        raise ValueError("Diarization pipeline not initialized")
+    
     waveform, sample_rate = torchaudio.load(audio_file)
     diarization = diarization_pipeline({
         "waveform": waveform,
@@ -74,7 +116,8 @@ def get_speaker_segments(audio_file):
         })
     return segments
 
-def find_speaker_label(start, end, speaker_segments, margin=0.1):
+def find_speaker_label(start, end, speaker_segments):
+    margin = 0.25 if use_doa_json else 0.1
     midpoint = (start + end) / 2
     for seg in speaker_segments:
         if seg["start"] - margin <= midpoint <= seg["end"] + margin:
@@ -101,7 +144,10 @@ print(f"Transcription time (s): {end_time - start_time:.2f}")
 
 # ---- SPEAKER DIARIZATION ----
 print("Running speaker diarization ...")
-speaker_segments = get_speaker_segments(audio_file)
+if use_doa_json:
+    speaker_segments = get_speaker_segments_from_doa_json(doa_json_path)
+else:
+    speaker_segments = get_speaker_segments(audio_file)
 
 # ---- FORMAT OUTPUT ----
 final_output = []
@@ -137,4 +183,4 @@ def cleanup_wav_file(original_file, wav_file):
         except Exception as e:
             print(f"⚠️ Failed to delete WAV file: {e}")
 
-cleanup_wav_file(sys.argv[1], audio_file)
+cleanup_wav_file(args.audio_file, audio_file)

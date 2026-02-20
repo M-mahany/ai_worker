@@ -12,6 +12,7 @@ interface BatchRecordingDTO {
   fileURL: string;
   fileUrlExpiresAt: number;
   isTranscripted?: boolean;
+  doaJsonFileKey?: string;
 }
 
 export const processRecordingTranscript = async (recordingId: string) => {
@@ -76,6 +77,9 @@ export const processRecordingTranscript = async (recordingId: string) => {
 
     for (const [index, batch] of sortedBatches?.entries() || []) {
       let batchFilePath: string | undefined;
+      let doaJsonFilePath: string | undefined;
+      const hasDOAJson = batch?.doaJsonFileKey;
+
       try {
         console.log(
           `Started trancripting batch ${index + 1}/${batches?.length}`,
@@ -118,12 +122,25 @@ export const processRecordingTranscript = async (recordingId: string) => {
         console.log(`Downloading batch file from s3`);
         batchFilePath = await AWSService.downloadS3File(batch.fileKey);
 
+        if (hasDOAJson) {
+          console.log(`Downloading DOA JSON file from s3: ${hasDOAJson}`);
+          try {
+            doaJsonFilePath = await AWSService.downloadJsonFromS3(hasDOAJson);
+          } catch (error: any) {
+            console.log(
+              `Error downloading DOA JSON file from s3: ${error?.message || error}`,
+            );
+          }
+        }
+
         console.log(
           `Started processing Batch transcript ${index + 1} with whisper...`,
         );
 
-        let whisperS2tTranscript =
-          await AiService.transcribeAudio(batchFilePath);
+        let whisperS2tTranscript = await AiService.transcribeAudio(
+          batchFilePath,
+          doaJsonFilePath,
+        );
 
         if (whisperS2tTranscript?.length === 0) {
           whisperS2tTranscript = [
@@ -170,6 +187,13 @@ export const processRecordingTranscript = async (recordingId: string) => {
         if (batchFilePath) {
           await fs.unlink(batchFilePath).catch(() => {
             console.warn(`Failed to delete temp file: ${batchFilePath}`);
+          });
+        }
+        if (doaJsonFilePath) {
+          await fs.unlink(doaJsonFilePath).catch(() => {
+            console.warn(
+              `Failed to delete DOA JSON temp file: ${doaJsonFilePath}`,
+            );
           });
         }
       }
