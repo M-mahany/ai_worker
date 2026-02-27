@@ -7,7 +7,7 @@ import { AWSService } from "./services/awsService";
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
 
-// const MAX_WORKERS = 2;
+const MAX_CONCURRENCY = 2;
 let WORKER_RUNNING: number = 0;
 
 let instanceId: string | null = null;
@@ -16,108 +16,103 @@ let hookNotifiedStatus = 0;
 
 const workerManager = async () => {
   EMPTY_ATTEMPTS = 0;
+  const inFlight = new Set<Promise<void>>();
+  const pendingMessages: any[] = [];
+
+  const startProcessing = (message: any) => {
+    const p = (async () => {
+      if (!message?.Body) {
+        console.log("Received an empty message body, deleting...");
+        if (message.ReceiptHandle) {
+          await AWSService.deleteMessageFromQueue(message.ReceiptHandle);
+        }
+        return;
+      }
+
+      console.log(`Processing message: ${message.Body}`);
+      try {
+        const processingType =
+          message?.MessageAttributes?.processingType?.StringValue;
+
+        const isAnalyzeType = processingType === "analyze";
+
+        if (!isAnalyzeType) {
+          await processRecordingTranscript(message.Body);
+        }
+      } catch (error: any) {
+        console.error(
+          `Error processing message: ${error?.message || error}`,
+          error,
+        );
+      }
+
+      try {
+        if (message?.ReceiptHandle) {
+          console.log(`Message is being deleted...`);
+          await AWSService.deleteMessageFromQueue(message?.ReceiptHandle);
+        } else {
+          console.error("Message missing ReceiptHandle, skipping delete...");
+        }
+      } catch (error: any) {
+        console.error(
+          `Error deleting message: ${error?.message || error}`,
+          error,
+        );
+      }
+    })()
+      .catch((err) => {
+        console.error("Unhandled error in message handler:", err);
+      })
+      .finally(() => {
+        inFlight.delete(p);
+        WORKER_RUNNING = inFlight.size;
+      });
+
+    inFlight.add(p);
+    hasActiveWorkerStarted = true;
+    WORKER_RUNNING = inFlight.size;
+  };
+
   try {
     while (true) {
+      // First, drain any internally queued messages up to concurrency limit
+      while (inFlight.size < MAX_CONCURRENCY && pendingMessages.length > 0) {
+        const nextMessage = pendingMessages.shift();
+        if (nextMessage) {
+          startProcessing(nextMessage);
+        }
+      }
+
+      if (inFlight.size >= MAX_CONCURRENCY) {
+        await Promise.race(inFlight);
+        continue;
+      }
+
       const Messages = await AWSService.pollQueue();
 
       if (!Messages?.length) {
-        EMPTY_ATTEMPTS++;
+        if (inFlight.size === 0 && pendingMessages.length === 0) {
+          EMPTY_ATTEMPTS++;
 
-        if (EMPTY_ATTEMPTS >= MAX_ATTEMPTS) {
-          console.log("Too many empty attempts, terminating worker...");
-          return;
+          if (EMPTY_ATTEMPTS >= MAX_ATTEMPTS) {
+            console.log("Too many empty attempts, terminating worker...");
+            return;
+          }
+
+          console.log("Messages Queue is empty...");
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.min(EMPTY_ATTEMPTS * 2 * 1000, 150000)),
+          );
+        } else {
+          await Promise.race(inFlight);
         }
-
-        console.log("Messages Queue is empty...");
-        await new Promise((resolve) =>
-          setTimeout(resolve, Math.min(EMPTY_ATTEMPTS * 2 * 1000, 150000)),
-        );
         continue;
       }
 
       EMPTY_ATTEMPTS = 0;
 
-      await Promise.all(
-        Messages.map(async (message) => {
-          if (!message?.Body) {
-            console.log("Received an empty message body, deleting...");
-            if (message.ReceiptHandle) {
-              await AWSService.deleteMessageFromQueue(message.ReceiptHandle);
-            }
-            return;
-          }
-
-          console.log(`Processing message: ${message.Body}`);
-          try {
-            const processingType =
-              message?.MessageAttributes?.processingType?.StringValue;
-
-            const isAnalyzeType = processingType === "analyze";
-
-            // let generatedTranscript;
-
-            if (!isAnalyzeType) {
-              // generatedTranscript =
-              await processRecordingTranscript(message.Body);
-            }
-
-            // if (WORKER_RUNNING >= MAX_WORKERS) {
-            //   console.log(
-            //     "Maximum workers reached. Waiting for a worker to finish...",
-            //   );
-            //   await waitForWorkerToFinish();
-            // }
-
-            // const workerPath = path.resolve(
-            //   __dirname,
-            //   "./workers/insightProcessor.js",
-            // );
-
-            // const worker = new Worker(workerPath, {
-            //   workerData: {
-            //     transcript: generatedTranscript,
-            //     recordingId: message?.Body,
-            //   },
-            // });
-
-            // WORKER_RUNNING++;
-            // hasActiveWorkerStarted = true;
-            // Handle worker exit event
-            // worker.on("exit", (code) => {
-            //   WORKER_RUNNING--;
-            //   console.log(
-            //     `Worker finished with code ${code}. Active workers: ${WORKER_RUNNING}`,
-            //   );
-            // });
-
-            // Handle worker error event
-            // worker.on("error", (err) => {
-            //   WORKER_RUNNING--;
-            //   console.error("Worker encountered an error:", err);
-            // });
-          } catch (error: any) {
-            console.error(
-              `Error processing message: ${error?.message || error}`,
-              error,
-            );
-          }
-          try {
-            if (message?.ReceiptHandle) {
-              console.log(`Message is being deleted...`);
-              await AWSService.deleteMessageFromQueue(message?.ReceiptHandle);
-            } else {
-              console.error(
-                "Message missing ReceiptHandle, skipping delete...",
-              );
-            }
-          } catch (error: any) {
-            console.error(
-              `Error deleting message: ${error?.message || error}`,
-              error,
-            );
-          }
-        }),
-      );
+      // Queue all received messages internally so none are "thrown away"
+      pendingMessages.push(...Messages);
     }
   } catch (error) {
     console.error("Worker Manager Error:", error);
