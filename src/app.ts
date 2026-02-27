@@ -36,76 +36,88 @@ const workerManager = async () => {
       }
 
       EMPTY_ATTEMPTS = 0;
-      const message = Messages[0];
 
-      if (!message?.Body) {
-        console.log("Received an empty message body, deleting...");
-        if (message.ReceiptHandle) {
-          await AWSService.deleteMessageFromQueue(message.ReceiptHandle);
-        }
-        continue;
-      }
+      await Promise.all(
+        Messages.map(async (message) => {
+          if (!message?.Body) {
+            console.log("Received an empty message body, deleting...");
+            if (message.ReceiptHandle) {
+              await AWSService.deleteMessageFromQueue(message.ReceiptHandle);
+            }
+            return;
+          }
 
-      console.log(`Processing message: ${message.Body}`);
-      try {
-        const processingType =
-          message?.MessageAttributes?.processingType?.StringValue;
+          console.log(`Processing message: ${message.Body}`);
+          try {
+            const processingType =
+              message?.MessageAttributes?.processingType?.StringValue;
 
-        const isAnalyzeType = processingType === "analyze";
+            const isAnalyzeType = processingType === "analyze";
 
-        // let generatedTranscript;
+            // let generatedTranscript;
 
-        if (!isAnalyzeType) {
-          // generatedTranscript =
-          await processRecordingTranscript(message.Body);
-        }
+            if (!isAnalyzeType) {
+              // generatedTranscript =
+              await processRecordingTranscript(message.Body);
+            }
 
-        // if (WORKER_RUNNING >= MAX_WORKERS) {
-        //   console.log(
-        //     "Maximum workers reached. Waiting for a worker to finish...",
-        //   );
-        //   await waitForWorkerToFinish();
-        // }
+            // if (WORKER_RUNNING >= MAX_WORKERS) {
+            //   console.log(
+            //     "Maximum workers reached. Waiting for a worker to finish...",
+            //   );
+            //   await waitForWorkerToFinish();
+            // }
 
-        // const workerPath = path.resolve(
-        //   __dirname,
-        //   "./workers/insightProcessor.js",
-        // );
+            // const workerPath = path.resolve(
+            //   __dirname,
+            //   "./workers/insightProcessor.js",
+            // );
 
-        // const worker = new Worker(workerPath, {
-        //   workerData: {
-        //     transcript: generatedTranscript,
-        //     recordingId: message?.Body,
-        //   },
-        // });
+            // const worker = new Worker(workerPath, {
+            //   workerData: {
+            //     transcript: generatedTranscript,
+            //     recordingId: message?.Body,
+            //   },
+            // });
 
-        // WORKER_RUNNING++;
-        // hasActiveWorkerStarted = true;
-        // Handle worker exit event
-        // worker.on("exit", (code) => {
-        //   WORKER_RUNNING--;
-        //   console.log(
-        //     `Worker finished with code ${code}. Active workers: ${WORKER_RUNNING}`,
-        //   );
-        // });
+            // WORKER_RUNNING++;
+            // hasActiveWorkerStarted = true;
+            // Handle worker exit event
+            // worker.on("exit", (code) => {
+            //   WORKER_RUNNING--;
+            //   console.log(
+            //     `Worker finished with code ${code}. Active workers: ${WORKER_RUNNING}`,
+            //   );
+            // });
 
-        // Handle worker error event
-        // worker.on("error", (err) => {
-        //   WORKER_RUNNING--;
-        //   console.error("Worker encountered an error:", err);
-        // });
-      } catch (error: any) {
-        console.error(
-          `Error processing message: ${error?.message || error}`,
-          error,
-        );
-      }
-      if (message.ReceiptHandle) {
-        console.log(`Message is being deleted...`);
-        await AWSService.deleteMessageFromQueue(message.ReceiptHandle);
-      } else {
-        console.error("Message missing ReceiptHandle, skipping delete...");
-      }
+            // Handle worker error event
+            // worker.on("error", (err) => {
+            //   WORKER_RUNNING--;
+            //   console.error("Worker encountered an error:", err);
+            // });
+          } catch (error: any) {
+            console.error(
+              `Error processing message: ${error?.message || error}`,
+              error,
+            );
+          }
+          try {
+            if (message?.ReceiptHandle) {
+              console.log(`Message is being deleted...`);
+              await AWSService.deleteMessageFromQueue(message?.ReceiptHandle);
+            } else {
+              console.error(
+                "Message missing ReceiptHandle, skipping delete...",
+              );
+            }
+          } catch (error: any) {
+            console.error(
+              `Error deleting message: ${error?.message || error}`,
+              error,
+            );
+          }
+        }),
+      );
     }
   } catch (error) {
     console.error("Worker Manager Error:", error);
