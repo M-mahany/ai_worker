@@ -43,7 +43,7 @@ else:
 # ---- LOAD MODELS ----
 try:
     print("Loading Faster-Whisper model ...")
-    model = WhisperModel("large-v3", device="cuda", compute_type="int8_float16"")
+    model = WhisperModel("large-v3", device="cuda", compute_type="int8_float16")
     batched_model = BatchedInferencePipeline(model=model)
 
     if not use_doa_json:
