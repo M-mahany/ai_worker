@@ -43,7 +43,7 @@ else:
 # ---- LOAD MODELS ----
 try:
     print("Loading Faster-Whisper model ...")
-    model = WhisperModel("large-v3", device="cuda", compute_type="int8")
+    model = WhisperModel("large-v3", device="cuda", compute_type="int8_float16"")
     batched_model = BatchedInferencePipeline(model=model)
 
     if not use_doa_json:
@@ -130,11 +130,11 @@ segments, info = batched_model.transcribe(
     audio_file, 
     word_timestamps=True,
     vad_filter=True,
-    vad_parameters=dict(min_silence_duration_ms=250),
+    vad_parameters=dict(min_silence_duration_ms=300),
     language="en",
     initial_prompt=None,
-    beam_size=5,
-    batch_size=16,
+    beam_size=3,
+    batch_size=8,
     condition_on_previous_text=True,
     temperature=0.0
     )
