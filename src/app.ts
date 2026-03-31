@@ -7,7 +7,7 @@ import { AWSService } from "./services/awsService";
 const MAX_ATTEMPTS = 100;
 let EMPTY_ATTEMPTS = 0;
 
-const MAX_CONCURRENCY = 2;
+const MAX_CONCURRENCY = 1;
 let WORKER_RUNNING: number = 0;
 
 function recordingIdFromBody(message: any): string | null {

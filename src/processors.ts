@@ -15,6 +15,68 @@ interface BatchRecordingDTO {
   doaJsonFileKey?: string;
 }
 
+const handleTranscriptToMainServer = async (
+  recordingId: string,
+  segments: any[],
+  language: string,
+) => {
+  try {
+    console.log("segmentsCount:", segments?.length);
+
+    if (segments?.length === 0) {
+      console.log(
+        `Recording ${recordingId} is silent. No transcript generated. sending null Key to main server...`,
+      );
+      mainServerRequest
+        .post(`/recording/${recordingId}/transcript`, {
+          transcriptKey: null,
+          isSilent: true,
+        })
+        .catch((err) =>
+          console.error(
+            `Failed to notify main server (silent) for ${recordingId}:`,
+            err?.message ?? err,
+          ),
+        );
+      return;
+    }
+
+    console.log(
+      "Finished Recording transcript, uploading tmp json to s3 bucket",
+    );
+
+    const transcript = {
+      language,
+      segments,
+    };
+
+    // console.log("transcriptJson", transcript);
+
+    const { key } = await AWSService.uploadJsonToS3(
+      transcript,
+      `${recordingId}_transcript`,
+      "tmp",
+    );
+    console.log("transcriptKey", key);
+
+    // console.log("AWS file key (2)", key);
+
+    console.log("Sending update to the main server");
+    mainServerRequest
+      .post(`/recording/${recordingId}/transcript`, { transcriptKey: key })
+      .catch((err) =>
+        console.error(
+          `Failed to notify main server of transcript for ${recordingId}:`,
+          err?.message ?? err,
+        ),
+      );
+  } catch (error: any) {
+    console.log(
+      `Error handling transcript to main server: ${error?.message || error}`,
+    );
+  }
+};
+
 export const processRecordingTranscript = async (recordingId: string) => {
   try {
     const { data: response } = await mainServerRequest.get(
@@ -176,6 +238,8 @@ export const processRecordingTranscript = async (recordingId: string) => {
         previousEnd += batch?.end;
 
         console.log(`Finished transcribing batch ${index + 1}`);
+
+        await handleTranscriptToMainServer(recordingId, segments, language);
       } catch (error: any) {
         console.log(
           `Error processing recording batch ${index + 1}: ${error?.message || error}`,
@@ -199,57 +263,7 @@ export const processRecordingTranscript = async (recordingId: string) => {
       }
     }
 
-    console.log("segmentsCount:", segments?.length);
-
-    if (segments?.length === 0) {
-      console.log(
-        `Recording ${recordingId} is silent. No transcript generated. sending null Key to main server...`,
-      );
-      mainServerRequest
-        .post(`/recording/${recordingId}/transcript`, {
-          transcriptKey: null,
-          isSilent: true,
-        })
-        .catch((err) =>
-          console.error(
-            `Failed to notify main server (silent) for ${recordingId}:`,
-            err?.message ?? err,
-          ),
-        );
-      return;
-    }
-
-    console.log(
-      "Finished Recording transcript, uploading tmp json to s3 bucket",
-    );
-
-    const transcript = {
-      language,
-      segments,
-    };
-
-    // console.log("transcriptJson", transcript);
-
-    const { key } = await AWSService.uploadJsonToS3(
-      transcript,
-      `${recordingId}_transcript`,
-      "tmp",
-    );
-    console.log("transcriptKey", key);
-
-    // console.log("AWS file key (2)", key);
-
-    console.log("Sending update to the main server");
-    mainServerRequest
-      .post(`/recording/${recordingId}/transcript`, { transcriptKey: key })
-      .catch((err) =>
-        console.error(
-          `Failed to notify main server of transcript for ${recordingId}:`,
-          err?.message ?? err,
-        ),
-      );
-
-    return transcript;
+    return;
   } catch (error: any) {
     console.log(
       `Error Processing recording Transcript ${error?.message || error}`,

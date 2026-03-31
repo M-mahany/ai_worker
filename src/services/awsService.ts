@@ -50,7 +50,7 @@ export class AWSService {
   static async pollQueue() {
     try {
       const command = new ReceiveMessageCommand({
-        MaxNumberOfMessages: 2,
+        MaxNumberOfMessages: 1,
         MessageAttributeNames: ["All"],
         QueueUrl: queueUrl,
         WaitTimeSeconds: 20,
