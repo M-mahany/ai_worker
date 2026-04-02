@@ -84,23 +84,6 @@ export const processRecordingTranscript = async (recordingId: string) => {
     );
     const { data: recording } = response;
 
-    const startedProcessingAt = recording?.startedProcessingAt;
-
-    const currentTime = new Date();
-
-    const oneHourInMilliseconds = 1 * 60 * 60 * 1000;
-
-    if (
-      startedProcessingAt &&
-      currentTime.getTime() - startedProcessingAt.getTime() <=
-        oneHourInMilliseconds
-    ) {
-      console.log(
-        `Recording ${recordingId} is already processing. Skipping processing...`,
-      );
-      return;
-    }
-
     console.log(`Started Processing recording ${recordingId}`);
 
     const batches = recording?.batches as BatchRecordingDTO[];
